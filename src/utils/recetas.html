@@ -1,0 +1,137 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        @page {
+            size: A1; /* Change from the default size of A4 */
+            margin: 1cm; /* Set margin on each page */ 
+        }
+        @font-face {
+            font-family: Gentium;
+            src: url(https://example.com/fonts/Gentium.otf);
+        }
+        body {
+            border:  #000;
+            border-radius: solid 1px;
+            color: darkslategray;
+            height: 100%;
+            width: 100%;
+        }
+        .header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .clinic-info {
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .clinic-logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        .clinic-name {
+            font-weight: bold;
+            font-size: 10;
+            color: cadetblue;
+        }
+        .doctor-info
+        {
+            text-align: left;
+            font-size: 24;
+            color: cadetblue;
+        }
+        .especialidad {
+            font-size: 18;
+        }
+        .main-content {
+            background-image: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('../../public/logo.jpg');
+            background-repeat: no-repeat;
+            background-position: right;
+            height: 100%;
+        }
+        .content {
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            text-align: justify;
+        }
+        .linea-gruesa {
+            width: 100%;
+            height: 2px;
+            margin-top: 2px;
+            margin-bottom: 2px;
+            background-color: cadetblue;
+        }
+        .patient-info {
+            padding-top: 20px;
+        }
+        .patient-label {
+            font-weight: bold;
+        }
+        .document-label {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .footer {
+            padding-top: 20px;
+            display: flex;
+            justify-content: end;
+        }
+        .doctor-signature {
+            display: flex;
+            justify-content: center;
+            border-top: solid 1px cadetblue;
+            width: 40%;
+            margin-top: 20px;
+        }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="clinic-info">
+        <img class="clinic-logo" src="../../public/logo.jpg" alt="Logo de la Clínica" />
+        <div class="clinic-name">Nombre de la Clínica</div>
+      </div>
+      <div class="doctor-info">
+        <div>Dra. Nery Fina Rodríguez Orraca</div>
+        <div class="especialidad">Especialista en Medicina Familiar</div>
+      </div>
+    </div>
+    <div class="linea-gruesa"></div>
+    <div class="main-content">
+      <div class="patient-info">
+        <div class="patient-label">Paciente</div>
+        <p>
+          Nombre: NOMBRE DEL PACIENTE<br />
+          Edad: EDAD DEL PACIENTE<br />
+          Género: GÉNERO DEL PACIENTE<br />
+          Dirección: DIRECCIÓN DEL PACIENTE<br />
+          Teléfono: TELÉFONO DEL PACIENTE
+        </p>
+      </div>
+      <!-- Contenido editable entre el apartado del paciente y la parte inferior -->
+      <div class="content">
+        <div class="document-label">Receta Médica</div>
+        <!-- Tu contenido aquí -->
+        <p>
+          Lorem Ipsum es simplemente el texto de relleno de las imprentas y archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar de las
+          industrias desde el año 1500, cuando un impresor (N. del T. persona que se dedica a la imprenta) desconocido usó una galería de textos y los
+          mezcló de tal manera que logró hacer un libro de textos especimen. No sólo sobrevivió 500 años, sino que tambien ingresó como texto de
+          relleno en documentos electrónicos, quedando esencialmente igual al original. Fue popularizado en los 60s con la creación de las hojas
+          "Letraset", las cuales contenian pasajes de Lorem Ipsum, y más recientemente con software de autoedición, como por ejemplo Aldus PageMaker,
+          el cual incluye versiones de Lorem Ipsum.
+        </p>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="doctor-signature">Firma del Médico</div>
+    </div>
+  </body>
+</html>
