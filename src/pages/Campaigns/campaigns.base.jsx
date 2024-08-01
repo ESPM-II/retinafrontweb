@@ -13,7 +13,8 @@ import { FaRegEye } from "react-icons/fa";
 export const makeTableColumns = ({
   setIsEditingCampaign,
   setIsModalOpen,
-  setIsPreviewModalOpen
+  setIsPreviewModalOpen,
+  refetchCampaigns // Añadimos refetchCampaigns como parámetro
 }) => {
   const cols = [
     /* {

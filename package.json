@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@apollo/client": "^3.10.8",
+    "@apollo/client": "^3.11.2",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
     "@tanstack/react-query": "^5.8.4",
     "@tanstack/react-query-devtools": "^5.8.4",
     "antd": "^5.11.3",
+    "apollo-upload-client": "^18.0.1",
     "axios": "^1.6.2",
     "chart.js": "^4.4.1",
     "chilean-rutify": "^2.1.0",

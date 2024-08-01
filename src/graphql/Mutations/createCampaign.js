@@ -1,14 +1,15 @@
-import { gql } from "@apollo/client";
+  import { gql } from "@apollo/client";
 
-export const CREATE_CAMPAIGN = gql`
-mutation CreateCampaign {
-  createCampaign(input: { 
-    type: "ejemplo", 
-    title: "ejemplo", 
-    description: "ejemplo" 
-  }) {
-    success
-    message
-  }
-}
-`;
+  export const CREATE_CAMPAIGN = gql`
+    mutation CreateCampaign($type: String!, $title: String!, $description: String!, $image: Upload!) {
+      createCampaign(input: { 
+        type: $type, 
+        title: $title, 
+        description: $description,
+        image: $image
+      }) {
+        success
+        message
+      }
+    }
+  `;

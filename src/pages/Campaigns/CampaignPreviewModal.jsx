@@ -24,7 +24,6 @@ const CampaignPreviewModal = ({
       <div className="flex flex-col items-center justify-center w-full h-full">
         <Card
           title={selectedCampaign.title}
-          // hoverable
           bordered
           style={{
             width: "100%",
@@ -32,7 +31,7 @@ const CampaignPreviewModal = ({
           cover={
             <img
               alt="Campaign Image"
-              src="http://www.centromedicoangamos.cl/wp-content/uploads/2022/12/Disen%CC%83o-sin-ti%CC%81tulo.png"
+              src={selectedCampaign.image} // Assuming this is the correct way to get the image URL
             />
           }
         >
