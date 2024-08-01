@@ -31,11 +31,6 @@ const CampaignModalContent = ({ form }) => {
             <Button icon={<UploadOutlined />}>Subir imagen</Button>
           </Upload>
         </Form.Item>
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Enviar
-          </Button>
-        </Form.Item>
       </Form>
     </div>
   );

@@ -8,13 +8,14 @@ import {
   QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { FaRegEye } from "react-icons/fa";
+import { CHANGE_VISIBILITY } from "../../graphql/Mutations/changeVisibility";
 
 
 export const makeTableColumns = ({
   setIsEditingCampaign,
   setIsModalOpen,
   setIsPreviewModalOpen,
-  refetchCampaigns // Añadimos refetchCampaigns como parámetro
+  handleVisibilityChange, // Añadimos refetchCampaigns como parámetro
 }) => {
   const cols = [
     /* {
@@ -65,9 +66,7 @@ export const makeTableColumns = ({
               description="¿Seguro que quieres borrar esta campaña?"
               icon={<QuestionCircleOutlined style={{ color: "red" }} />}
               placement="left"
-              onConfirm={() => {
-                /* remove({cod_usuario: record.cod_usuario}) */
-              }}
+              onConfirm={() => handleVisibilityChange(record._id)}
               okButtonProps={{ type: "default", danger: true }}
               okText="Si"
               cancelText="No"

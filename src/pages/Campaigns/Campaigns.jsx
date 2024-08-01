@@ -1,14 +1,14 @@
-// src/pages/Campaigns.jsx
 import { useState, useEffect } from "react";
 import { Form, Input, Upload, Button, message, Spin } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { useQuery } from "@apollo/client";
-import { GET_ALL_CAMPAINGS } from "../../graphql/Queries/campaings.graphql";
+import { useQuery, useMutation } from "@apollo/client";
+import { GET_ALL_CAMPAINGS } from "../../graphql/Queries/campaings.graphql"; // Asegúrate de que esta ruta es correcta
 import BaseModal from "../../components/Modals/BaseModal";
 import AntTable from "../../components/Tables/AntTable";
 import { makeTableColumns } from "./campaigns.base";
 import CampaignModalContent from "./CampaignModalContent";
 import CampaignPreviewModal from "./CampaignPreviewModal";
+import { CHANGE_VISIBILITY } from "../../graphql/Mutations/changeVisibility"; // Asegúrate de que esta ruta es correcta
 
 const Campaigns = () => {
   const [form] = Form.useForm();
@@ -16,8 +16,9 @@ const Campaigns = () => {
   const [isEditingCampaign, setIsEditingCampaign] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(true);
-
-  const { data, error, loading } = useQuery(GET_ALL_CAMPAINGS);
+  
+  const [changeVisibility] = useMutation(CHANGE_VISIBILITY);
+  const { data, error, loading, refetch } = useQuery(GET_ALL_CAMPAINGS);
 
   const onOk = async () => {
     try {
@@ -67,6 +68,20 @@ const Campaigns = () => {
     }
   };
 
+  const handleVisibilityChange = async (id) => {
+    try {
+      const { data } = await changeVisibility({ variables: { id } });
+      if (data.changeVisibility.success) {
+        message.success("Campaña eliminada exitosamente");
+        refetch();
+      } else {
+        message.error(data.changeVisibility.message);
+      }
+    } catch (error) {
+      message.error("Error al eliminar la campaña");
+    }
+  };
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setShowLoadingSkeleton(false);
@@ -95,9 +110,7 @@ const Campaigns = () => {
         text="Add Campaign"
         onOk={onOk}
         onCancel={onCancel}
-        component={
-          <CampaignModalContent form={form} />
-        }
+        component={<CampaignModalContent form={form} />}
       />
       <main className="w-full h-screen py-2 overflow-y-auto bg-blue-50 flex flex-col items-center justify-center">
         {showLoadingSkeleton || loading ? (
@@ -109,6 +122,7 @@ const Campaigns = () => {
               setIsEditingCampaign,
               setIsModalOpen,
               setIsPreviewModalOpen,
+              handleVisibilityChange,
             })}
           />
         ) : (

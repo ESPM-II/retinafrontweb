@@ -12,7 +12,7 @@ import Users from "./pages/Users/Users";
 import Patients from "./pages/Patients/Patients";
 import MedicalDocuments from "./pages/MedicalDocuments/MedicalDocuments";
 import TestIA from "./pages/TestIA/TestIA";
-import ContactPoints from "./pages/ContactsPoints/contactPoints";
+import ContactPoints from '../src/pages/ContactsPoints/ContactPoints'
 
 
 const routes = [

@@ -8,7 +8,7 @@ import { GET_ALL_CONTACTS } from "../../graphql/Queries/contactPoints.graphql";
 import { useQuery } from "@apollo/client";
 
 
-const ContactPoints = () => {
+export const ContactPoints = () => {
   // const { data, isFetching, error } = useGetContacts();
   const [form] = Form.useForm();
 
