@@ -13,6 +13,14 @@ const Layer = ({ children }) => {
   } = theme.useToken();
 
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Eliminar token de autenticación
+    localStorage.removeItem('authToken');
+    // Redirigir a la página de login
+    navigate('/login');
+  };
 
   return (
     <Layout className="w-screen h-screen">
@@ -29,7 +37,6 @@ const Layer = ({ children }) => {
       >
         <img size={50} src="newLogo.png" alt="" />
         
-
         <Menu
           className="w-full ml-7 bg-[#fff]"
           mode="horizontal"
@@ -55,7 +62,7 @@ const Layer = ({ children }) => {
             items: [
               {
                 key: "1",
-                label: <a onClick={() => console.log("Logout")}>Logout</a>,
+                label: <a onClick={handleLogout}>Logout</a>,
                 icon: <RiLogoutCircleRLine />
               },
             ],
@@ -86,4 +93,5 @@ const Layer = ({ children }) => {
     </Layout>
   );
 };
+
 export default Layer;
