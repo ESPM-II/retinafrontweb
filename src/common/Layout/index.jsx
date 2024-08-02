@@ -1,7 +1,7 @@
 import React from "react";
 import { Avatar, Layout, Menu, theme, Dropdown } from "antd";
 import routes from "../../routes";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { UserOutlined } from "@ant-design/icons";
 import { RiLogoutCircleRLine } from "react-icons/ri";
 
@@ -44,15 +44,15 @@ const Layer = ({ children }) => {
             return {
               key: String(index + 1),
               label: (
-                <a
+                <Link
                   style={{
                     color:
                       route.path === location.pathname ? "black" : "black",
                   }}
-                  href={route.path}
+                  to={route.path}
                 >
                   {route.name}
-                </a>
+                </Link>
               ),
             };
           })}
