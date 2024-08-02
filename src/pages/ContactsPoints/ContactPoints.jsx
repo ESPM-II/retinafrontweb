@@ -1,35 +1,73 @@
-import React, { useState, Fragment } from "react";
-import Spinner from "../../components/Loading/Spinner";
+import React, { useState } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import { Form, Input, Button, message, Spin } from "antd";
 import BaseModal from "../../components/Modals/BaseModal";
 import AntTable from "../../components/Tables/AntTable";
-import { Form } from "antd";
-import { getFakeContacts, makeTableColumns } from "./contact.points.base";
-import { GET_ALL_CONTACTS } from "../../graphql/Queries/contactPoints.graphql";
-import { useQuery } from "@apollo/client";
-
+import { GET_ALL_CONTACTS, SAVE_ADMIN_REPLY } from "../../graphql/Queries/contactPoints.graphql";
+import { makeTableColumns } from "./contact.points.base";
 
 export const ContactPoints = () => {
-  // const { data, isFetching, error } = useGetContacts();
   const [form] = Form.useForm();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
 
-  const { data, error, loading} = useQuery(GET_ALL_CONTACTS);
+  const { data, error, loading } = useQuery(GET_ALL_CONTACTS);
+  const [saveAdminReply] = useMutation(SAVE_ADMIN_REPLY);
 
-  if(loading) return <p>Loading...</p>;
+  if (loading) return (
+    <div className="flex justify-center items-center h-full">
+      <Spin size="large" />
+    </div>
+  );
+
   if (error) return <p>Error: {error.message}</p>;
 
   const contactPoints = data.getContacts.contacts;
 
-  // const { getContacts: list } = data ? data : [];
-  // isFetching
-  if (false) {
-    return <Spinner tip="Loading Contacts" />;
-  }
-
   const onCancel = () => {
     setIsModalOpen(false);
+    form.resetFields();
+  };
+
+  const onSubmit = async () => {
+    const values = await form.validateFields();
+    const { description, content } = values;
+    if (!selectedContact || !selectedContact.contactID) {
+      console.error("No contact selected or contactID is missing");
+      return;
+    }
+    try {
+      console.log("Responding to contactID: ", selectedContact.contactID);
+      message.success("Respuesta enviada exitosamente");
+      await saveAdminReply({
+        variables: {
+          input: {
+            contactID: selectedContact.contactID,
+            description,
+            content,
+          },
+        },
+      });
+      setIsModalOpen(false);
+      form.resetFields();
+    } catch (error) {
+      console.error("Error saving admin reply: ", error);
+      message.error("Error al enviar la respuesta");
+      if (error.graphQLErrors) {
+        error.graphQLErrors.forEach(({ message, locations, path }) =>
+          console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
+        );
+      }
+      if (error.networkError) {
+        console.log(`[Network error]: ${error.networkError}`);
+      }
+    }
+  };
+
+  const onRespond = (record) => {
+    setSelectedContact(record);
+    setIsModalOpen(true);
+    console.log("Selected contact: ", record);
   };
 
   return (
@@ -38,19 +76,27 @@ export const ContactPoints = () => {
         hasAddButton={false}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
-        headTitle="Puntos de contacto"
-        title={(isEditingContact ? "Edit" : "Create") + " Contact"}
-        text="Add Contact"
-        component={<>Contact Points Detail from={form}</>}
+        headTitle="Responder Punto de Contacto"
+        title={`Responder a: ${selectedContact?.content}`}
+        text="Responder"
+        onOk={onSubmit}
+        component={
+          <Form form={form}>
+            <Form.Item name="description" label="Descripción de la Respuesta">
+              <Input.TextArea rows={4} />
+            </Form.Item>
+            <Form.Item name="content" label="Contenido de la Respuesta">
+              <Input.TextArea rows={4} />
+            </Form.Item>
+          </Form>
+        }
         onCancel={onCancel}
       />
       <main className="flex w-full h-full py-2 overflow-y-auto bg-blue-50">
         <AntTable
           data={contactPoints}
-          // hasPagination={false}
           columns={makeTableColumns({
-            setIsEditingContact: setIsEditingContact,
-            setIsModalOpen: setIsModalOpen,
+            onRespond,
           })}
         />
       </main>

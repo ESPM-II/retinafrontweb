@@ -1,51 +1,49 @@
 import dayjs from "dayjs";
-import faker from "faker";
-import { Button, Popconfirm, Tooltip } from "antd";
+import { Button, Popconfirm, Tooltip, message, Spin } from "antd";
 import { EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 
-export const makeTableColumns = ({ setIsEditingContact, setIsModalOpen }) => {
+export const makeTableColumns = ({ onRespond }) => {
   return [
     {
       dataIndex: "_id",
       title: "ID",
     },
     {
-      dataIndex: "contactPointType",
-      title: "Tipo de mensaje", // Cambiado a "Paciente" para mayor claridad
+      dataIndex: "contactID",
+      title: "Contact ID",
     },
     {
-      dataIndex: "content", // Corregido el nombre de la propiedad (era "constactText")
+      dataIndex: "contactPointType",
+      title: "Tipo de mensaje",
+    },
+    {
+      dataIndex: "content",
       title: "Texto del Mensaje",
-      ellipsis: true, // Para mostrar puntos suspensivos si el texto es muy largo
+      ellipsis: true,
     },
     {
       dataIndex: "createdAt",
       title: "Fecha de Carga",
-      render: (dateString) => dayjs(dateString).format("YYYY-MM-DD"), // Formatear la fecha
+      render: (dateString) => dayjs(dateString).format("YYYY-MM-DD"),
     },
     {
       key: "actions",
       title: "Acciones",
       render: (record) => (
         <div className="flex flex-row justify-center gap-2 text-center">
-          <Tooltip title="Responder Mensaje"> 
+          <Tooltip title="Responder Mensaje">
             <Button
               type="link"
-              onClick={() => {
-                setIsEditingContact(record); // Pasar todo el registro al editar
-                setIsModalOpen(true);
-              }}
+              onClick={() => onRespond(record)}
               icon={<EditOutlined />}
             />
           </Tooltip>
-
           <Tooltip placement="topLeft" title="Eliminar Mensaje">
             <Popconfirm
-              title="¿Estás seguro de que quieres eliminar este mensaje?" // Mensaje más claro
+              title="¿Estás seguro de que quieres eliminar este mensaje?"
               icon={<QuestionCircleOutlined style={{ color: "red" }} />}
               onConfirm={() => {
-                // Aquí va la lógica para eliminar el contacto
-                console.log("Eliminar contacto:", record._id); // Ejemplo
+                console.log("Eliminar contacto:", record._id);
               }}
               okText="Sí"
               cancelText="No"
@@ -57,14 +55,4 @@ export const makeTableColumns = ({ setIsEditingContact, setIsModalOpen }) => {
       ),
     },
   ];
-};
-
-export const getFakeContacts = (count = 10) => { // Parámetro opcional para la cantidad
-  return Array.from({ length: count }, () => ({
-    _id: faker.datatype.uuid(),
-    patient: faker.name.findName(),
-    contactType: faker.random.arrayElement(["Reclamo", "Consulta", "Sugerencia"]),
-    contactText: faker.lorem.sentences(2), // Dos oraciones para más realismo
-    uploadDate: dayjs(faker.date.past()).format("YYYY-MM-DD"),
-  }));
 };
