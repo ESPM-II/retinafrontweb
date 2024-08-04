@@ -19,7 +19,6 @@ const routes = [
     { name: "Puntos de contacto", path: '/contacts-points', component: ContactPoints, icon: ({...props}) =><RiContactsLine size="1.2em" {...props}/> },
     { name: "Campañas de marketing", path: '/campaigns', component: Campaigns, icon: ({...props}) =><MdOutlineCampaign size="1.2em" {...props}/> },
     { name: "Dashboard", path: '/', component: Home, icon: ({...props}) => <IoHomeOutline size="1.2em" {...props}/> },
-    { name: "Inicio de sesión", path: '/Login', component: Login, icon: ({...props}) =><MdOutlineCampaign size="1.2em" {...props}/> },    
 ];
 
 export default routes;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Avatar, Layout, Menu, theme, Dropdown } from "antd";
 import routes from "../../routes";
 import { useLocation, useNavigate, Link } from "react-router-dom";
@@ -14,6 +14,7 @@ const Layer = ({ children }) => {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const [activeLink, setActiveLink] = useState(location.pathname);
 
   const handleLogout = () => {
     // Eliminar token de autenticación
@@ -33,45 +34,43 @@ const Layer = ({ children }) => {
           width: "100%",
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between"
         }}
       >
         <img size={50} src="newLogo.png" alt="" />
         
-        <Menu
-          className="w-full ml-7 bg-[#fff]"
-          mode="horizontal"
-          items={routes.map((route, index) => {
-            return {
-              key: String(index + 1),
-              label: (
-                <Link
-                  style={{
-                    color:
-                      route.path === location.pathname ? "black" : "black",
-                  }}
-                  to={route.path}
-                >
-                  {route.name}
-                </Link>
-              ),
-            };
-          })}
-        />
-        <Dropdown
-          menu={{
-            items: [
-              {
-                key: "1",
-                label: <a onClick={handleLogout}>Logout</a>,
-                icon: <RiLogoutCircleRLine />
-              },
-            ],
-            
-          }}
-          placement="bottomLeft"
-        >
-          <Avatar size={30} icon={<UserOutlined />} />
-        </Dropdown>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {routes.map((route, index) => (
+            <Link
+              key={index}
+              style={{
+                color: activeLink === route.path ? "#1EAF8E" : "#0A0B0A",
+                fontSize: '15px',
+                lineHeight: '21.6px',
+                fontWeight: 600,
+                margin: '0 10px'
+              }}
+              to={route.path}
+              onClick={() => setActiveLink(route.path)}
+            >
+              {route.name}
+            </Link>
+          ))}
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "1",
+                  label: <a onClick={handleLogout}>Logout</a>,
+                  icon: <RiLogoutCircleRLine style={{ color: '#1EAF8E' }} />,
+                },
+              ],
+            }}
+            placement="bottomLeft"
+          >
+            <Avatar size={40} icon={<UserOutlined style={{ color: '#1EAF8E' }} />} style={{ backgroundColor: 'transparent' }} />
+          </Dropdown>
+        </div>
       </Header>
       <Content className="flex flex-col w-full h-full px-10 mt-4">
         <div
