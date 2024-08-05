@@ -107,7 +107,7 @@ const Campaigns = () => {
         setIsModalOpen={setIsModalOpen}
         headTitle="Campañas Activas"
         title={"Crear nueva campaña"}
-        text="Add Campaign"
+        text="Agregar Campaña"
         onOk={onOk}
         onCancel={onCancel}
         component={<CampaignModalContent form={form} />}

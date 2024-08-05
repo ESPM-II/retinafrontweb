@@ -8,6 +8,7 @@ export const GET_ALL_CONTACTS = gql`
         contactID
         contactPointType
         content
+        userData
         createdAt
         status
       }

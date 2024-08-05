@@ -9,8 +9,10 @@ const CampaignModalContent = ({ form }) => {
   return (
     <div className="flex flex-col w-full h-full gap-4">
       <Form form={form} onFinish={onFinish}>
-        <Form.Item name="type" rules={[{ required: false }]}>
-          <Input className="mt-3 mb-3" placeholder="Tipo de campaña" />
+        <Form.Item 
+          name="type" 
+          rules={[{ required: true, message: "Por favor ingresa el tipo de campaña" }]}>
+          <Input className="mt-3 mb-3" placeholder="Tipo de campaña"/>
         </Form.Item>
         <Form.Item
           name="title"
@@ -18,14 +20,14 @@ const CampaignModalContent = ({ form }) => {
         >
           <Input className="mt-3 mb-3" placeholder="Título de campaña" />
         </Form.Item>
-        <Form.Item name="description" rules={[{ required: false }]}>
+        <Form.Item name="description" rules={[{ required: true, message: "Por favor, ingresa la descripción e la campaña" }]}>
           <Input.TextArea className="mt-3 mb-3" placeholder="Descripción de la campaña" />
         </Form.Item>
         <Form.Item
           name="image"
           valuePropName="fileList"
           getValueFromEvent={(e) => Array.isArray(e) ? e : e?.fileList}
-          rules={[{ required: true, message: "Por favor, carga una imagen" }]}
+          rules={[{ required: false}]}
         >
           <Upload name="image" listType="picture" beforeUpload={() => false}>
             <Button icon={<UploadOutlined />}>Subir imagen</Button>

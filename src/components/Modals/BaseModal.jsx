@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Modal, Typography, Tooltip, Input } from "antd";
+import { Button, Modal, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
@@ -38,7 +38,12 @@ const BaseModal = ({
           
           {hasAddButton && (
             <Button
-              className="text-white"
+              style={{ 
+                backgroundColor: "#199276", 
+                borderColor: "white", 
+                color: "white", 
+                borderRadius: "24px" 
+              }}
               icon={<PlusOutlined />}
               onClick={showModal}
             >
@@ -53,9 +58,7 @@ const BaseModal = ({
         okText="Aceptar"
         width={width}
         style={{ ...style }}
-        styles={{
-          body: { ...bodyStyle },
-        }}
+        bodyStyle={{ ...bodyStyle }}
         okButtonProps={{
           type: "default",
           htmlType: "submit",
@@ -73,4 +76,5 @@ const BaseModal = ({
     </div>
   );
 };
+
 export default BaseModal;
