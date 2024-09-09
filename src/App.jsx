@@ -11,7 +11,13 @@ import AuthContext from './context/AuthContext';
 import { useContext } from 'react';
 
 const ProtectedRoute = ({ element }) => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, loading } = useContext(AuthContext);
+
+  if (loading) {
+    // Puedes mostrar un spinner o mensaje de carga
+    return <div>Loading...</div>;
+  }
+
   return isAuthenticated ? element : <Navigate to="/login" />;
 };
 

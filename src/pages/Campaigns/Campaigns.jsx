@@ -101,6 +101,7 @@ const Campaigns = () => {
 
   const onCancel = () => {
     setIsModalOpen(false);
+    refetch();
   };
 
   return (

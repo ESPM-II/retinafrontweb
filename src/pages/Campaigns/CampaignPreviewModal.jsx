@@ -1,12 +1,6 @@
 import { Card, Modal } from "antd";
 
-const { Meta } = Card;
-
-const CampaignPreviewModal = ({
-  isModalOpen,
-  setIsModalOpen,
-  selectedCampaign,
-}) => {
+const CampaignPreviewModal = ({ isModalOpen, setIsModalOpen, selectedCampaign }) => {
   const onCancel = () => {
     setIsModalOpen(false);
   };
@@ -16,14 +10,13 @@ const CampaignPreviewModal = ({
       title={selectedCampaign.title}
       destroyOnClose
       width={600}
-      footer={<></>}
+      footer={null}
       open={isModalOpen}
-      onOk={() => {}}
       onCancel={onCancel}
     >
       <div className="flex flex-col items-center justify-center w-full h-full">
         <Card
-          title={selectedCampaign.title}
+          title={selectedCampaign.createdAt}
           bordered
           style={{
             width: "100%",
@@ -35,11 +28,11 @@ const CampaignPreviewModal = ({
             />
           }
         >
-          <Meta
-            title={selectedCampaign.description}
-            description={selectedCampaign.campaignText}
-            createdAt={selectedCampaign.createdAt}
-          />
+          {/* Contenido personalizado para mostrar la descripción completa */}
+          <div>
+            <h3>{selectedCampaign.description}</h3>
+            <br/>
+          </div>
         </Card>
       </div>
     </Modal>

@@ -9,11 +9,18 @@ import {
 } from "../../graphql/Queries/contactPoints.graphql";
 import { makeTableColumns } from "./contact.points.base";
 
+// Indicador de estado
+// Componente de indicador de estado modificado
 const StatusIndicator = ({ color, label }) => (
   <div className="flex items-center mr-4">
+    {/* Círculo de color */}
     <div className={`w-4 h-4 rounded-full ${color} mr-2`}></div>
+    {/* Etiqueta de texto con borde y color de texto */}
     <span
-      className={`border bg-transparent rounded-full px-2 py-1 text-sm ${color}-border`}
+      className={`border rounded-full px-2 py-1 text-sm border-${color.replace(
+        'bg-',
+        ''
+      )} text-${color.replace('bg-', '')}`}
     >
       {label}
     </span>
@@ -25,9 +32,11 @@ export const ContactPoints = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
 
-  const { data, error, loading } = useQuery(GET_ALL_CONTACTS);
+  // Apollo Client: Obtener contactos con `refetch`
+  const { data, error, loading, refetch } = useQuery(GET_ALL_CONTACTS);
   const [saveAdminReply] = useMutation(SAVE_ADMIN_REPLY);
 
+  // Efecto para cargar el contacto seleccionado en el formulario
   useEffect(() => {
     if (selectedContact) {
       form.setFieldsValue({
@@ -37,6 +46,7 @@ export const ContactPoints = () => {
     }
   }, [selectedContact, form]);
 
+  // Manejadores de carga, error y datos
   if (loading)
     return (
       <div className="flex justify-center items-center h-full">
@@ -46,16 +56,19 @@ export const ContactPoints = () => {
 
   if (error) return <p>Error: {error.message}</p>;
 
-  // Filtrar los puntos de contacto para excluir aquellos con status "respuesta"
+  // Filtrar puntos de contacto para excluir aquellos con estado "respuesta"
   const contactPoints = data.getContacts.contacts.filter(
     (contact) => contact.status !== "respuesta"
   );
 
+  // Manejador de cancelación del modal
   const onCancel = () => {
     setIsModalOpen(false);
+    setSelectedContact(null);
     form.resetFields();
   };
 
+  // Manejador de envío de respuesta
   const onSubmit = async () => {
     const values = await form.validateFields();
     const { description, content } = values;
@@ -77,6 +90,7 @@ export const ContactPoints = () => {
       });
       setIsModalOpen(false);
       form.resetFields();
+      await refetch(); // Refrescar datos después de enviar la respuesta
     } catch (error) {
       console.error("Error saving admin reply: ", error);
       message.error("Error al enviar la respuesta");
@@ -93,6 +107,7 @@ export const ContactPoints = () => {
     }
   };
 
+  // Manejador de selección para responder
   const onRespond = (record) => {
     setSelectedContact(record);
     setIsModalOpen(true);
@@ -101,6 +116,7 @@ export const ContactPoints = () => {
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
+      {/* Modal para responder a un punto de contacto */}
       <BaseModal
         hasAddButton={false}
         isModalOpen={isModalOpen}
@@ -146,6 +162,8 @@ export const ContactPoints = () => {
         }
         onCancel={onCancel}
       />
+      
+      {/* Indicadores de estado antes de la tabla */}
       <div className="flex flex-row justify-start items-center p-4 bg-gray-100">
         <StatusIndicator
           color="bg-red-500 border-red-500 text-red-500"
@@ -160,6 +178,8 @@ export const ContactPoints = () => {
           label="Respondido"
         />
       </div>
+
+      {/* Tabla de puntos de contacto */}
       <main className="flex w-full h-full py-2 overflow-y-auto bg-blue-50">
         <AntTable
           data={contactPoints}
