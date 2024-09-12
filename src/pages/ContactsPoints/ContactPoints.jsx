@@ -83,7 +83,7 @@ export const ContactPoints = () => {
         variables: {
           input: {
             contactID: selectedContact.contactID,
-            description,
+            description: selectedContact.contactPointType,
             content,
           },
         },
@@ -136,18 +136,6 @@ export const ContactPoints = () => {
             </Form.Item>
             <Form.Item name="incomingMessage" label="Descripción">
               <Input.TextArea value={selectedContact?.content} readOnly />
-            </Form.Item>
-            <Form.Item
-              name="description"
-              label="Asunto de la respuesta"
-              rules={[
-                {
-                  required: true,
-                  message: "El asunto de la respuesta es obligatorio",
-                },
-              ]}
-            >
-              <Input.TextArea rows={4} />
             </Form.Item>
             <Form.Item
               name="content"
