@@ -45,31 +45,39 @@ export const makeTableColumns = ({ onRespond }) => {
     {
       key: "actions",
       title: "Acciones",
-      render: (record) => (
-        <div className="flex flex-row justify-center gap-2 items-center">
-          <Tooltip title="Responder Mensaje">
-            <Button
-              type="link"
-              onClick={() => onRespond(record)}
-              icon={<EditOutlined />}
-            />
-          </Tooltip>
-          <Tooltip placement="topLeft" title="Eliminar Mensaje">
-            <Popconfirm
-              title="¿Estás seguro de que quieres eliminar este mensaje?"
-              icon={<QuestionCircleOutlined style={{ color: "red" }} />}
-              onConfirm={() => {
-                console.log("Eliminar contacto:", record._id);
-              }}
-              okText="Sí"
-              cancelText="No"
-            >
-              <Button danger type="link" icon={<DeleteOutlined />} />
-            </Popconfirm>
-          </Tooltip>
-          <StatusIndicator color={getStatusColor(record.status)} />
-        </div>
-      ),
+      render: (record) => {
+        const isDisabled = record.status === "cerrado"; // Deshabilita si el estado es "respuesta"
+        return (
+          <div className="flex flex-row justify-center gap-2 items-center">
+            <Tooltip title="Responder Mensaje">
+              <Button
+                type="link"
+                onClick={() => onRespond(record)}
+                icon={<EditOutlined />}
+                disabled={isDisabled} // Deshabilitar el botón si es necesario
+                style={{
+                  color: isDisabled ? "#ccc" : "#1890ff", // Cambia el color si está deshabilitado
+                  cursor: isDisabled ? "not-allowed" : "pointer", // Cambia el cursor si está deshabilitado
+                }}
+              />
+            </Tooltip>
+            <Tooltip placement="topLeft" title="Eliminar Mensaje">
+              <Popconfirm
+                title="¿Estás seguro de que quieres eliminar este mensaje?"
+                icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+                onConfirm={() => {
+                  console.log("Eliminar contacto:", record._id);
+                }}
+                okText="Sí"
+                cancelText="No"
+              >
+                <Button danger type="link" icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </Tooltip>
+            <StatusIndicator color={getStatusColor(record.status)} />
+          </div>
+        );
+      },
     },
   ];
 };
