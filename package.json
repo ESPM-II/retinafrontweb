@@ -20,6 +20,7 @@
     "axios": "^1.6.2",
     "chart.js": "^4.4.1",
     "chilean-rutify": "^2.1.0",
+    "date-fns": "^3.6.0",
     "dayjs": "^1.11.10",
     "dotenv": "^16.4.5",
     "faker": "^5.5.3",

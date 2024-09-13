@@ -3,6 +3,7 @@ import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
 import { Form, Input, Button, message, Spin } from "antd";
 import BaseModal from "../../components/Modals/BaseModal";
 import AntTable from "../../components/Tables/AntTable";
+import { format, parse } from 'date-fns'; // Importa funciones de parseo y formateo de fechas
 import { GET_ALL_CONTACTS, SAVE_ADMIN_REPLY, GET_CONTACT_BY_ID } from "../../graphql/Queries/contactPoints.graphql";
 import { makeTableColumns } from "./contact.points.base";
 
@@ -66,6 +67,15 @@ export const ContactPoints = () => {
     (contact) => contact.status !== "respuesta"
   );
 
+  // Parsear y formatear las fechas antes de renderizarlas
+  const formattedContacts = contactPoints.map(contact => {
+    const parsedDate = parse(contact.createdAt, 'dd/MM/yyyy', new Date()); // Parsear la fecha
+    return {
+      ...contact,
+      createdAt: format(parsedDate, 'yyyy-MM-dd HH:mm:ss'), // Formatear la fecha a un formato legible
+    };
+  });
+
   // Manejador de cancelación del modal
   const onCancel = () => {
     setIsModalOpen(false);
@@ -81,7 +91,7 @@ export const ContactPoints = () => {
     // Ejecuta la query para cambiar el estado a "Visto"
     getContactById({
       variables: {
-        contactID: record.contactID, // Pasa el contactID como variable
+        contactID: record.contactID,
       },
     });
   };
@@ -181,7 +191,7 @@ export const ContactPoints = () => {
       {/* Tabla de puntos de contacto */}
       <main className="flex w-full h-full py-2 overflow-y-auto bg-blue-50">
         <AntTable
-          data={contactPoints}
+          data={formattedContacts} // Utiliza los contactos con las fechas formateadas
           columns={makeTableColumns({
             onRespond,
           })}
