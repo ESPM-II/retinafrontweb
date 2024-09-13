@@ -13,7 +13,7 @@ const getStatusColor = (status) => {
     case "cerrado":
     case "respuesta":
       return "bg-green-500";
-    case "leído":
+    case "leido":
       return "bg-yellow-500";
     case "enviado":
       return "bg-red-500";

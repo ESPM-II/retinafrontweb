@@ -1,26 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
 import { Form, Input, Button, message, Spin } from "antd";
 import BaseModal from "../../components/Modals/BaseModal";
 import AntTable from "../../components/Tables/AntTable";
-import {
-  GET_ALL_CONTACTS,
-  SAVE_ADMIN_REPLY,
-} from "../../graphql/Queries/contactPoints.graphql";
+import { GET_ALL_CONTACTS, SAVE_ADMIN_REPLY, GET_CONTACT_BY_ID } from "../../graphql/Queries/contactPoints.graphql";
 import { makeTableColumns } from "./contact.points.base";
 
 // Indicador de estado
-// Componente de indicador de estado modificado
 const StatusIndicator = ({ color, label }) => (
   <div className="flex items-center mr-4">
-    {/* Círculo de color */}
     <div className={`w-4 h-4 rounded-full ${color} mr-2`}></div>
-    {/* Etiqueta de texto con borde y color de texto */}
     <span
       className={`border rounded-full px-2 py-1 text-sm border-${color.replace(
-        'bg-',
-        ''
-      )} text-${color.replace('bg-', '')}`}
+        "bg-",
+        ""
+      )} text-${color.replace("bg-", "")}`}
     >
       {label}
     </span>
@@ -36,6 +30,17 @@ export const ContactPoints = () => {
   const { data, error, loading, refetch } = useQuery(GET_ALL_CONTACTS);
   const [saveAdminReply] = useMutation(SAVE_ADMIN_REPLY);
 
+  // Define la query `GET_CONTACT_BY_ID` de manera perezosa
+  const [getContactById] = useLazyQuery(GET_CONTACT_BY_ID, {
+    onCompleted: (data) => {
+      console.log("Estado cambiado a Visto para contactID:", data.getContactByContactId.contactID);
+      refetch(); // Refresca los datos después de cambiar el estado
+    },
+    onError: (error) => {
+      console.error("Error al cambiar estado a Visto:", error);
+    },
+  });
+
   // Efecto para cargar el contacto seleccionado en el formulario
   useEffect(() => {
     if (selectedContact) {
@@ -46,7 +51,7 @@ export const ContactPoints = () => {
     }
   }, [selectedContact, form]);
 
-  // Manejadores de carga, error y datos
+  // Manejador de carga, error y datos
   if (loading)
     return (
       <div className="flex justify-center items-center h-full">
@@ -66,6 +71,19 @@ export const ContactPoints = () => {
     setIsModalOpen(false);
     setSelectedContact(null);
     form.resetFields();
+  };
+
+  // Manejador de selección para responder
+  const onRespond = (record) => {
+    setSelectedContact(record);
+    setIsModalOpen(true);
+
+    // Ejecuta la query para cambiar el estado a "Visto"
+    getContactById({
+      variables: {
+        contactID: record.contactID, // Pasa el contactID como variable
+      },
+    });
   };
 
   // Manejador de envío de respuesta
@@ -107,13 +125,6 @@ export const ContactPoints = () => {
     }
   };
 
-  // Manejador de selección para responder
-  const onRespond = (record) => {
-    setSelectedContact(record);
-    setIsModalOpen(true);
-    console.log("Selected contact: ", record);
-  };
-
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
       {/* Modal para responder a un punto de contacto */}
@@ -150,19 +161,19 @@ export const ContactPoints = () => {
         }
         onCancel={onCancel}
       />
-      
+
       {/* Indicadores de estado antes de la tabla */}
       <div className="flex flex-row justify-start items-center p-4 bg-gray-100">
         <StatusIndicator
-          color="bg-red-500 border-red-500 text-red-500"
+          color="bg-red-500"
           label="Sin responder"
         />
         <StatusIndicator
-          color="bg-yellow-500 border-yellow-500 text-yellow-500"
+          color="bg-yellow-500"
           label="Visto"
         />
         <StatusIndicator
-          color="bg-green-500 border-green-500 text-green-500"
+          color="bg-green-500"
           label="Respondido"
         />
       </div>

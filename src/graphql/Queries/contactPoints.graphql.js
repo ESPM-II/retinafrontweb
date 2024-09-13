@@ -17,11 +17,12 @@ export const GET_ALL_CONTACTS = gql`
 `;
 
 export const GET_CONTACT_BY_ID = gql`
-  query GetContactByContactId($input: GetContactInput!) {
-    getContactByContactId(input: $input) {
+  query GetContactByContactId($contactID: String!) {
+    getContactByContactId(input: { contactID: $contactID }) {
       _id
       contactID
       userEmail
+      adminEmail
       userData
       content
       createdAt
