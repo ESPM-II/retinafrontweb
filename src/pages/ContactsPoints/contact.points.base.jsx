@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { Button, Popconfirm, Tooltip } from "antd";
-import { EditOutlined, DeleteOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, QuestionCircleOutlined, EyeOutlined } from "@ant-design/icons";
 
 const StatusIndicator = ({ color }) => (
   <div className="flex items-center">
@@ -22,7 +22,7 @@ const getStatusColor = (status) => {
   }
 };
 
-export const makeTableColumns = ({ onRespond }) => {
+export const makeTableColumns = ({ onRespond, onView }) => {
   return [
     {
       dataIndex: "_id",
@@ -49,6 +49,13 @@ export const makeTableColumns = ({ onRespond }) => {
         const isDisabled = record.status === "cerrado"; // Deshabilita si el estado es "respuesta"
         return (
           <div className="flex flex-row justify-center gap-2 items-center">
+             <Tooltip title="Ver Mensaje">
+              <Button
+                type="link"
+                icon={<EyeOutlined />}
+                onClick={() => onView(record)} // Agregar el evento para abrir el modal de detalles
+              />
+            </Tooltip>
             <Tooltip title="Responder Mensaje">
               <Button
                 type="link"

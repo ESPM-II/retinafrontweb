@@ -1,48 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
-import { Form, Input, Button, message, Spin } from "antd";
+import { Form, Input, Button, message, Spin, Modal, Tooltip } from "antd";
 import BaseModal from "../../components/Modals/BaseModal";
 import AntTable from "../../components/Tables/AntTable";
-import { format, parse } from 'date-fns'; // Importa funciones de parseo y formateo de fechas
-import { GET_ALL_CONTACTS, SAVE_ADMIN_REPLY, GET_CONTACT_BY_ID } from "../../graphql/Queries/contactPoints.graphql";
+import { format, parse } from "date-fns";
+import { GET_ALL_CONTACTS, SAVE_ADMIN_REPLY, GET_CONTACT_BY_ID, GET_DEFERRED_CONTACT_POINTS } from "../../graphql/Queries/contactPoints.graphql";
 import { makeTableColumns } from "./contact.points.base";
 
-// Indicador de estado
-const StatusIndicator = ({ color, label }) => (
-  <div className="flex items-center mr-4">
-    <div className={`w-4 h-4 rounded-full ${color} mr-2`}></div>
-    <span
-      className={`border rounded-full px-2 py-1 text-sm border-${color.replace(
-        "bg-",
-        ""
-      )} text-${color.replace("bg-", "")}`}
-    >
-      {label}
-    </span>
+// Componente de indicador de estado
+const StatusIndicator = ({ color }) => (
+  <div className="flex items-center">
+    <div className={`w-4 h-4 rounded-full ${color}`} />
   </div>
 );
 
-export const ContactPoints = () => {
+const ContactPoints = () => {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false); // Estado para el modal de vista
+  const [viewContent, setViewContent] = useState({}); // Estado para almacenar el contenido del modal de vista
 
-  // Apollo Client: Obtener contactos con `refetch`
-  const { data, error, loading, refetch } = useQuery(GET_ALL_CONTACTS);
+  // Apollo Client: Obtener todos los puntos de contacto
+  const { data, error, loading, refetch } = useQuery(GET_DEFERRED_CONTACT_POINTS);
   const [saveAdminReply] = useMutation(SAVE_ADMIN_REPLY);
 
-  // Define la query `GET_CONTACT_BY_ID` de manera perezosa
   const [getContactById] = useLazyQuery(GET_CONTACT_BY_ID, {
     onCompleted: (data) => {
       console.log("Estado cambiado a Visto para contactID:", data.getContactByContactId.contactID);
-      refetch(); // Refresca los datos después de cambiar el estado
+      refetch();
     },
     onError: (error) => {
       console.error("Error al cambiar estado a Visto:", error);
     },
   });
 
-  // Efecto para cargar el contacto seleccionado en el formulario
   useEffect(() => {
     if (selectedContact) {
       form.setFieldsValue({
@@ -52,7 +44,6 @@ export const ContactPoints = () => {
     }
   }, [selectedContact, form]);
 
-  // Manejador de carga, error y datos
   if (loading)
     return (
       <div className="flex justify-center items-center h-full">
@@ -62,33 +53,31 @@ export const ContactPoints = () => {
 
   if (error) return <p>Error: {error.message}</p>;
 
-  // Filtrar puntos de contacto para excluir aquellos con estado "respuesta"
-  const contactPoints = data.getContacts.contacts.filter(
+  // Obtener todos los contactos y filtrar los que no son respuestas
+  const allContacts = data.getDeferredContactPoints.contacts;
+  const contactPoints = allContacts.filter(
     (contact) => contact.status !== "respuesta"
   );
 
-  // Parsear y formatear las fechas antes de renderizarlas
-  const formattedContacts = contactPoints.map(contact => {
-    const parsedDate = parse(contact.createdAt, 'dd/MM/yyyy', new Date()); // Parsear la fecha
+  // Formatear las fechas antes de renderizarlas
+  const formattedContacts = contactPoints.map((contact) => {
+    const parsedDate = parse(contact.createdAt, "dd/MM/yyyy", new Date());
     return {
       ...contact,
-      createdAt: format(parsedDate, 'yyyy-MM-dd HH:mm:ss'), // Formatear la fecha a un formato legible
+      createdAt: format(parsedDate, "yyyy-MM-dd HH:mm:ss"),
     };
   });
 
-  // Manejador de cancelación del modal
   const onCancel = () => {
     setIsModalOpen(false);
     setSelectedContact(null);
     form.resetFields();
   };
 
-  // Manejador de selección para responder
   const onRespond = (record) => {
     setSelectedContact(record);
     setIsModalOpen(true);
 
-    // Ejecuta la query para cambiar el estado a "Visto"
     getContactById({
       variables: {
         contactID: record.contactID,
@@ -96,7 +85,25 @@ export const ContactPoints = () => {
     });
   };
 
-  // Manejador de envío de respuesta
+  const onView = (record) => {
+    // Buscar la respuesta relacionada al mismo contactID
+    const response = allContacts.find(
+      (contact) => contact.contactID === record.contactID && contact.status === "respuesta"
+    );
+
+    setViewContent({
+      message: record.content,
+      name: record.userData,
+      email: record.userEmail,
+      fecha: record.createdAt,
+      estado: record.status,
+      responseContent: response ? response.content : null, // Contenido de la respuesta si existe
+      responseDate: response ? response.createdAt : null, // Fecha de la respuesta si existe
+    });
+
+    setIsViewModalOpen(true);
+  };
+
   const onSubmit = async () => {
     const values = await form.validateFields();
     const { description, content } = values;
@@ -118,7 +125,7 @@ export const ContactPoints = () => {
       });
       setIsModalOpen(false);
       form.resetFields();
-      await refetch(); // Refrescar datos después de enviar la respuesta
+      await refetch();
     } catch (error) {
       console.error("Error saving admin reply: ", error);
       message.error("Error al enviar la respuesta");
@@ -172,28 +179,45 @@ export const ContactPoints = () => {
         onCancel={onCancel}
       />
 
+      {/* Modal para ver detalles del mensaje */}
+      <Modal
+        title="Detalle del Mensaje"
+        visible={isViewModalOpen}
+        onCancel={() => setIsViewModalOpen(false)}
+        footer={[
+          <Button key="close" onClick={() => setIsViewModalOpen(false)}>
+            Cerrar
+          </Button>,
+        ]}
+      >
+        <p><strong>Nombre usuerio:</strong> {viewContent.name}</p>
+        <p><strong>Email usuario:</strong> {viewContent.email}</p>
+        <p><strong>Recibido el:</strong> {viewContent.fecha}</p>
+        <p><strong>Mensaje del usuario:</strong> {viewContent.message}</p>
+        <p><strong>Estado punto de contacto:</strong> {viewContent.estado}</p>
+        <br/>
+        {viewContent.responseContent && (
+          <>
+            <p><strong>Fecha de Respuesta:</strong> {viewContent.responseDate}</p>
+            <p><strong>Respuesta:</strong> {viewContent.responseContent}</p>
+          </>
+        )}
+      </Modal>
+
       {/* Indicadores de estado antes de la tabla */}
       <div className="flex flex-row justify-start items-center p-4 bg-gray-100">
-        <StatusIndicator
-          color="bg-red-500"
-          label="Sin responder"
-        />
-        <StatusIndicator
-          color="bg-yellow-500"
-          label="Visto"
-        />
-        <StatusIndicator
-          color="bg-green-500"
-          label="Respondido"
-        />
+        <StatusIndicator color="bg-red-500" label="Sin responder" />
+        <StatusIndicator color="bg-yellow-500" label="Visto" />
+        <StatusIndicator color="bg-green-500" label="Respondido" />
       </div>
 
       {/* Tabla de puntos de contacto */}
       <main className="flex w-full h-full py-2 overflow-y-auto bg-blue-50">
         <AntTable
-          data={formattedContacts} // Utiliza los contactos con las fechas formateadas
+          data={formattedContacts}
           columns={makeTableColumns({
             onRespond,
+            onView, // Pasar el manejador de vista al componente de la tabla
           })}
         />
       </main>
