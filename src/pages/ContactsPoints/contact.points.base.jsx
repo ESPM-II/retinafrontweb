@@ -22,7 +22,7 @@ const getStatusColor = (status) => {
   }
 };
 
-export const makeTableColumns = ({ onRespond, onView }) => {
+export const makeTableColumns = ({ onRespond, onView, handleSortByDate }) => {
   return [
     {
       dataIndex: "_id",
@@ -39,7 +39,11 @@ export const makeTableColumns = ({ onRespond, onView }) => {
     },
     {
       dataIndex: "createdAt",
-      title: "Fecha de Carga",
+      title: (
+        <span onClick={handleSortByDate} style={{ cursor: "pointer" }}>
+          Fecha de Carga
+        </span>
+      ),
       render: (dateString) => dayjs(dateString).format("YYYY-MM-DD"),
     },
     {
@@ -49,11 +53,11 @@ export const makeTableColumns = ({ onRespond, onView }) => {
         const isDisabled = record.status === "cerrado"; // Deshabilita si el estado es "respuesta"
         return (
           <div className="flex flex-row justify-center gap-2 items-center">
-             <Tooltip title="Ver Mensaje">
+            <Tooltip title="Ver Mensaje">
               <Button
                 type="link"
                 icon={<EyeOutlined />}
-                onClick={() => onView(record)} // Agregar el evento para abrir el modal de detalles
+                onClick={() => onView(record)}
               />
             </Tooltip>
             <Tooltip title="Responder Mensaje">
@@ -61,10 +65,10 @@ export const makeTableColumns = ({ onRespond, onView }) => {
                 type="link"
                 onClick={() => onRespond(record)}
                 icon={<EditOutlined />}
-                disabled={isDisabled} // Deshabilitar el botón si es necesario
+                disabled={isDisabled}
                 style={{
-                  color: isDisabled ? "#ccc" : "#1890ff", // Cambia el color si está deshabilitado
-                  cursor: isDisabled ? "not-allowed" : "pointer", // Cambia el cursor si está deshabilitado
+                  color: isDisabled ? "#ccc" : "#1890ff",
+                  cursor: isDisabled ? "not-allowed" : "pointer",
                 }}
               />
             </Tooltip>
