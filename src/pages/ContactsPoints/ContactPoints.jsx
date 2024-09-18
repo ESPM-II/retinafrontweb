@@ -93,13 +93,20 @@ setSortedContacts(sortedByDate);
   const onRespond = (record) => {
     setSelectedContact(record);
     setIsModalOpen(true);
-
+  
+    // Asegúrate de que los valores del formulario se establezcan correctamente
+    form.setFieldsValue({
+      contactType: record.contactPointType, // Aquí se asigna el tipo de mensaje
+      incomingMessage: record.content, // Aquí se asigna la descripción (el mensaje del cliente)
+    });
+  
     getContactById({
       variables: {
         contactID: record.contactID,
       },
     });
   };
+  
 
   const onView = (record) => {
     const response = data.getDeferredContactPoints.contacts.find(

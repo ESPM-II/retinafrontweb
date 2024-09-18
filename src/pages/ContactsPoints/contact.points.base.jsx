@@ -34,14 +34,14 @@ export const makeTableColumns = ({ onRespond, onView, handleSortByDate }) => {
     },
     {
       dataIndex: "content",
-      title: "Texto del Mensaje",
+      title: "Título Mensaje",
       ellipsis: true,
     },
     {
       dataIndex: "createdAt",
       title: (
         <span onClick={handleSortByDate} style={{ cursor: "pointer" }}>
-          Fecha de Carga
+          Fecha Recepción
         </span>
       ),
       render: (dateString) => dayjs(dateString, "DD/MM/YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss"),
