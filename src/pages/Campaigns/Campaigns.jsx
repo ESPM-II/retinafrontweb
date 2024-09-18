@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Form, Input, Upload, Button, message, Spin } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_ALL_CAMPAINGS } from "../../graphql/Queries/campaings.graphql"; // Asegúrate de que esta ruta es correcta
 import BaseModal from "../../components/Modals/BaseModal";
@@ -46,13 +46,12 @@ const Campaigns = () => {
       uploadData.append('map', JSON.stringify({ '0': ['variables.image'] }));
       uploadData.append('0', file);
   
-      // Usa tu token directamente aquí
-      const token = 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImNjNWU0MTg0M2M1ZDUyZTY4ZWY1M2UyYmVjOTgxNDNkYTE0NDkwNWUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHItZWRpZmljaW8tZGVmb3JtZXMiLCJhdWQiOiJkci1lZGlmaWNpby1kZWZvcm1lcyIsImF1dGhfdGltZSI6MTcyNTU1MTY0MiwidXNlcl9pZCI6ImNNU3JWVTFibURYYmh1Z09DOEMwV3lVWGxVRTIiLCJzdWIiOiJjTVNyVlUxYm1EWGJodWdPQzhDMFd5VVhsVUUyIiwiaWF0IjoxNzI1NTUxNjQyLCJleHAiOjE3MjU1NTUyNDIsImVtYWlsIjoiamphb2xpdm9zLjAyQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImpqYW9saXZvcy4wMkBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJjdXN0b20ifX0.jEoLidzI2wOOZ_vihOUqKPER8-ZNoa4ERS2ErUY1vOXVtgWxRjhO3CrXMJhVJbPCfLqY9jLnru2W3SQzCBjg6H5OVPk2fk3-IgyQBRhQxqVIm6x0L6disWigiD_MkZFXWvOed5UksJIdluuOSLeCdVcyYathgNqLK5gF6H3zKVi_64_VNwVYE-odtbdZ99ZnaxP_hl3b11_JeQaZ70L5mg0OpzNq46OV0TE72eOgZ4E7eN-P5TcyzS31UsFUN-61ynUVNYD-evOH5Su8A-tVOnKT0pgNpgavfbPYJbSgj3hB6VrVKp5kskL7-l3Kq5UwXvZuXDnQ76sXV18tpHt3eQ';
+      const token = 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImUwM2E2ODg3YWU3ZjNkMTAyNzNjNjRiMDU3ZTY1MzE1MWUyOTBiNzIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHItZWRpZmljaW8tZGVmb3JtZXMiLCJhdWQiOiJkci1lZGlmaWNpby1kZWZvcm1lcyIsImF1dGhfdGltZSI6MTcyNjY3NDg0MCwidXNlcl9pZCI6ImNNU3JWVTFibURYYmh1Z09DOEMwV3lVWGxVRTIiLCJzdWIiOiJjTVNyVlUxYm1EWGJodWdPQzhDMFd5VVhsVUUyIiwiaWF0IjoxNzI2Njc0ODQwLCJleHAiOjE3MjY2Nzg0NDAsImVtYWlsIjoiamphb2xpdm9zLjAyQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImpqYW9saXZvcy4wMkBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJjdXN0b20ifX0.ZPxrB0j9mD7QvVIINAfliOM7RCposKARibUl6QfuW9dkStZiqSjnDbpQMS41cbCOsqbXhLls2rN_jRtlp3IitlLYQusom2tUxxSOWc7SpE7Te95XAa5W6PNeUd7HZYzoJOzKDUKOcZkTyJjFjQ9cFFLAtrWC63M3BNdLsveKC8J_dnsof6fsJG4UVjPwW29sf4ROmeM7kEqyafl_8Z8hMS_B1z_Ojypmp4vsDy3xVvD4BxxjVlChjmO23DXFrvDWj6Fz4Ek1q5wOhcDGlIi8vSIJrTzhANKJoO4L3EmoDzgfv2EhPB_RmOT29NTgnnObe5VSZQm6wqamAEQcv28dvw';
   
       const response = await fetch(import.meta.env.VITE_GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Authorization': token, // Usa el token directamente aquí
+          'Authorization': token,
         },
         body: uploadData,
       });
@@ -98,7 +97,35 @@ const Campaigns = () => {
 
   if (error) return <p>Error: {error.message}</p>;
 
-  const campaigns = data?.getCampaigns || [];
+  const campaigns = (data?.getCampaigns || []).map(campaign => {
+    // Verificar si la fecha existe antes de intentar manipularla
+    const dateStr = campaign.date; // Asegúrate de que 'campaign.date' sea el campo correcto
+    
+    if (dateStr) {
+      const [datePart, timePart] = dateStr.split(' ');
+      const [day, month, year] = datePart.split('/');
+      
+      // Crear un objeto Date utilizando los valores extraídos (año, mes - 1 porque el mes en Date empieza en 0, día)
+      const dateObj = new Date(`${year}-${month}-${day}T${timePart}`);
+      
+      return {
+        ...campaign,
+        dateObj: dateObj // Guardar el objeto Date para ordenar
+      };
+    }
+  
+    return {
+      ...campaign,
+      dateObj: null // Si no hay fecha, asignar null
+    };
+  }).sort((a, b) => {
+    // Si alguno de los objetos dateObj es null, lo empujamos al final de la lista
+    if (!a.dateObj) return 1;
+    if (!b.dateObj) return -1;
+    // Ordenar de mayor a menor (más reciente a más antigua)
+    return b.dateObj - a.dateObj;
+  });
+  
 
   const onCancel = () => {
     setIsModalOpen(false);
@@ -107,6 +134,7 @@ const Campaigns = () => {
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden">
+      {/* Modal para crear nueva campaña */}
       <BaseModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
@@ -117,6 +145,22 @@ const Campaigns = () => {
         onCancel={onCancel}
         component={<CampaignModalContent form={form} />}
       />
+
+      {/* Botón de Actualizar y Tabla */}
+      <div className="flex flex-row justify-between items-center p-4 bg-gray-100">
+        <div className="flex">
+          {/* Puedes agregar cualquier indicador o texto adicional aquí si lo deseas */}
+        </div>
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={() => refetch()}
+          className="flex items-center justify-center"
+        >
+          Actualizar
+        </Button>
+      </div>
+
       <main className="w-full h-screen py-2 overflow-y-auto bg-blue-50 flex flex-col items-center justify-center">
         {showLoadingSkeleton || loading ? (
           <Spin />
@@ -134,6 +178,8 @@ const Campaigns = () => {
           <p>No se encontraron campañas.</p>
         )}
       </main>
+
+      {/* Modal para previsualizar campaña */}
       <CampaignPreviewModal
         selectedCampaign={isEditingCampaign}
         isModalOpen={isPreviewModalOpen}
