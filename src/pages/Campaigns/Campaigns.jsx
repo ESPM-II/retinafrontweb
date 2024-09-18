@@ -64,6 +64,7 @@ const Campaigns = () => {
   
       message.success("Campaña creada exitosamente");
       form.resetFields();
+      refetch();
       setIsModalOpen(false);
     } catch (err) {
       console.error("Error creating campaign:", err);

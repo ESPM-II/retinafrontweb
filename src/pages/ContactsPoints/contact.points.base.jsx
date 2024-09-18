@@ -44,7 +44,7 @@ export const makeTableColumns = ({ onRespond, onView, handleSortByDate }) => {
           Fecha de Carga
         </span>
       ),
-      render: (dateString) => dayjs(dateString).format("YYYY-MM-DD"),
+      render: (dateString) => dayjs(dateString, "DD/MM/YYYY HH:mm:ss").format("YYYY-MM-DD HH:mm:ss"),
     },
     {
       key: "actions",

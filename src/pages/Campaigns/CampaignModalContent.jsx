@@ -32,6 +32,7 @@ const CampaignModalContent = ({ form }) => {
           <Upload name="image" listType="picture" beforeUpload={() => false}>
             <Button icon={<UploadOutlined />}>Subir imagen</Button>
           </Upload>
+          
         </Form.Item>
       </Form>
     </div>

@@ -54,22 +54,25 @@ const ContactPoints = () => {
         (contact) => contact.status !== "respuesta"
       );
 
-      // Formatear y ordenar los contactos por la fecha más reciente al cargar el componente
-      const formattedContacts = contactPoints.map((contact) => {
-        const parsedDate = parse(contact.createdAt, "dd/MM/yyyy", new Date());
-        return {
-          ...contact,
-          createdAt: format(parsedDate, "yyyy-MM-dd HH:mm:ss"),
-        };
-      });
+// Formatear y ordenar los contactos por la fecha más reciente al cargar el componente
+const formattedContacts = contactPoints.map((contact) => {
+  const parsedDate = parse(contact.createdAt, "dd/MM/yyyy HH:mm:ss", new Date());
+  return {
+    ...contact,
+    createdAt: format(parsedDate, "dd/MM/yyyy HH:mm:ss"),
+  };
+});
 
-      const sortedByDate = [...formattedContacts].sort((a, b) =>
-        compareDesc(new Date(a.createdAt), new Date(b.createdAt))
-      );
+const sortedByDate = [...formattedContacts].sort((a, b) => {
+  const dateA = parse(a.createdAt, "dd/MM/yyyy HH:mm:ss", new Date());
+  const dateB = parse(b.createdAt, "dd/MM/yyyy HH:mm:ss", new Date());
+  return compareDesc(dateA, dateB);
+});
 
-      setSortedContacts(sortedByDate);
-    }
-  }, [data]);
+
+setSortedContacts(sortedByDate);
+}
+}, [data]); 
 
   const handleSortByDate = () => {
     const sortedData = [...sortedContacts].sort((a, b) =>
