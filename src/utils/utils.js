@@ -4,31 +4,45 @@ import dayjs from 'dayjs';
 export const groupByMonth = (users, dateField = 'createdAt') => {
     const monthlyCounts = {};
   
-    // Recorremos todos los usuarios
     users.forEach(user => {
       const date = dayjs(Number(user[dateField]));
   
-      // Si la fecha es válida, tomamos el mes y el año
       if (date.isValid()) {
-        const month = date.format('MMMM'); // Formato del mes en texto completo
+        const month = date.format('MMMM');
         
-        // Si el mes no está en el objeto, lo inicializamos en 0
         if (!monthlyCounts[month]) {
           monthlyCounts[month] = 0;
         }
   
-        // Incrementamos el conteo de usuarios en ese mes
         monthlyCounts[month]++;
       }
     });
   
-    // Creamos un array con todos los meses del año
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June', 
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
   
-    // Devolvemos un array con el conteo de cada mes, o 0 si no hay datos para ese mes
     return months.map(month => monthlyCounts[month] || 0);
-  };
-  
+};
+
+// Nueva función para agrupar por los últimos 7 días
+export const groupByLast7Days = (users, dateField = 'createdAt') => {
+    const dailyCounts = {};
+
+    // Inicializamos un array con los últimos 7 días
+    const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, 'day').format('YYYY-MM-DD')).reverse();
+
+    users.forEach(user => {
+        const date = dayjs(Number(user[dateField])).format('YYYY-MM-DD');
+        
+        if (last7Days.includes(date)) {
+            if (!dailyCounts[date]) {
+                dailyCounts[date] = 0;
+            }
+            dailyCounts[date]++;
+        }
+    });
+
+    return last7Days.map(day => dailyCounts[day] || 0);
+};
