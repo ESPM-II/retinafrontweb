@@ -7,6 +7,7 @@ import Spinner from "../../components/Loading/Spinner";
 import { useQuery } from "@apollo/client";
 import { GET_ACTIVE_USERS, GET_REGISTER_USERS } from "../../graphql/Queries/Dashboard.graphql";
 import { groupByMonth, groupByLast7Days } from "../../utils/utils";
+import ContactPointPieChart from "../../components/Charts/ContactPointPieChart"; // Importa el gráfico de torta
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
@@ -48,7 +49,7 @@ const Home = () => {
 
   // Datos para el gráfico del mes
   const chartData = {
-    labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
     datasets: [
       {
         label: "Usuarios Activos",
@@ -122,6 +123,11 @@ const Home = () => {
             <LineChart data={chartDataLast7Days} title="Últimos 7 días" />
           </div>
         </div>
+      </div>
+
+      {/* Gráfico de torta de tipos de contacto */}
+      <div className="mt-6">
+        <ContactPointPieChart />
       </div>
     </div>
   );
