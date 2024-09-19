@@ -8,9 +8,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Line, Doughnut } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 
-export const LineChart = ({ title }) => {
+export const LineChart = ({ data, title }) => {
   const options = {
     responsive: true,
     plugins: {
@@ -24,37 +24,6 @@ export const LineChart = ({ title }) => {
     },
   };
 
-  const labels = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-  ];
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Dataset 1",
-        data: labels.map(
-          () => Math.floor(Math.random() * (1000 - -1000 + 1)) + -1000
-        ),
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-      },
-      {
-        label: "Dataset 2",
-        data: labels.map(
-          () => Math.floor(Math.random() * (1000 - -1000 + 1)) + -1000
-        ),
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-    ],
-  };
-
   ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -64,5 +33,6 @@ export const LineChart = ({ title }) => {
     Tooltip,
     Legend
   );
+
   return <Line options={options} data={data} />;
 };

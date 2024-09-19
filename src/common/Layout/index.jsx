@@ -87,7 +87,7 @@ const Layer = ({ children }) => {
           textAlign: "center",
         }}
       >
-        Developed by RetinaRx
+        Desarrollado por RetinaRx
       </Footer>
     </Layout>
   );
