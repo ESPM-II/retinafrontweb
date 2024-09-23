@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Card, Typography, DatePicker } from "antd";
-import { Pie } from "react-chartjs-2";
+import { Pie, Line } from "react-chartjs-2"; 
 import { useQuery } from "@apollo/client";
 import { GET_DEFERRED_CONTACT_POINTS } from "../../graphql/Queries/contactPoints.graphql";
 import Spinner from "../../components/Loading/Spinner";
 import dayjs from "dayjs";
-import isBetween from "dayjs/plugin/isBetween"; // Plugin para usar isBetween
-import customParseFormat from "dayjs/plugin/customParseFormat"; // Plugin para parsear formatos personalizados
+import isBetween from "dayjs/plugin/isBetween"; 
+import customParseFormat from "dayjs/plugin/customParseFormat"; 
 
-dayjs.extend(isBetween); // Extiende dayjs para habilitar isBetween
-dayjs.extend(customParseFormat); // Extiende dayjs para manejar formatos personalizados
+dayjs.extend(isBetween);
+dayjs.extend(customParseFormat);
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title as ChartTitle } from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, ChartTitle);
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -21,21 +21,19 @@ const { RangePicker } = DatePicker;
 const ContactPointPieChart = () => {
   const [dataFiltered, setDataFiltered] = useState([]);
   const [rangeDates, setRangeDates] = useState([dayjs().startOf('year'), dayjs()]);
-  const [chartData, setChartData] = useState(null); // Inicializamos en null para verificar luego
+  const [chartData, setChartData] = useState(null);
   const [percentages, setPercentages] = useState({});
+  const [lineChartData, setLineChartData] = useState(null);
   
-  // Query para obtener los puntos de contacto diferidos
   const { loading, data } = useQuery(GET_DEFERRED_CONTACT_POINTS);
   
-  // Filtrar los datos según el rango de fechas seleccionado
   const filterDataByDate = (contacts, startDate, endDate) => {
     return contacts.filter(contact => {
-      const contactDate = dayjs(contact.createdAt, "DD/MM/YYYY HH:mm:ss"); // Aseguramos el formato correcto
+      const contactDate = dayjs(contact.createdAt, "DD/MM/YYYY HH:mm:ss");
       return contactDate.isBetween(startDate, endDate, null, "[]") && contact.status !== "respuesta";
     });
   };
 
-  // Calcular los datos para el gráfico de torta
   const calculateChartData = (contacts) => {
     const contactTypes = {};
     let totalContacts = 0;
@@ -49,13 +47,11 @@ const ContactPointPieChart = () => {
       totalContacts++;
     });
     
-    // Calcular porcentajes
     const percentages = {};
     for (const type in contactTypes) {
       percentages[type] = ((contactTypes[type] / totalContacts) * 100).toFixed(2);
     }
 
-    // Generar los datos para el gráfico
     const labels = Object.keys(contactTypes);
     const data = Object.values(contactTypes);
     const backgroundColors = ["#FF6384", "#36A2EB", "#FFCE56", "#199276", "#EDA145"];
@@ -66,7 +62,7 @@ const ContactPointPieChart = () => {
         datasets: [
           {
             data,
-            backgroundColor: backgroundColors.slice(0, labels.length), // Ajustar los colores a los tipos de contacto
+            backgroundColor: backgroundColors.slice(0, labels.length),
           },
         ],
       },
@@ -74,18 +70,38 @@ const ContactPointPieChart = () => {
     };
   };
 
-  // Actualizar los datos cada vez que cambie el rango de fechas o los datos de la query
+  const calculateLineChartData = (contacts) => {
+    const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, 'day').format('DD/MM')).reverse();
+    const contactCounts = last7Days.map(day => 
+      contacts.filter(contact => dayjs(contact.createdAt, "DD/MM/YYYY HH:mm:ss").format('DD/MM') === day).length
+    );
+
+    return {
+      labels: last7Days,
+      datasets: [
+        {
+          label: 'Puntos de Contacto (Últimos 7 días)',
+          data: contactCounts,
+          borderColor: '#36A2EB',
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        },
+      ],
+    };
+  };
+
   useEffect(() => {
     if (data && data.getDeferredContactPoints) {
       const filteredContacts = filterDataByDate(data.getDeferredContactPoints.contacts, rangeDates[0], rangeDates[1]);
       const { chartData, percentages } = calculateChartData(filteredContacts);
+      const lineChartData = calculateLineChartData(filteredContacts);
+      
       setChartData(chartData);
       setPercentages(percentages);
+      setLineChartData(lineChartData);
       setDataFiltered(filteredContacts);
     }
   }, [data, rangeDates]);
 
-  // Manejar la selección de rango de fechas
   const handleDateRangeChange = (dates) => {
     if (dates) {
       setRangeDates(dates);
@@ -97,22 +113,20 @@ const ContactPointPieChart = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-10 w-full">
+    <div className="flex flex-row gap-4 w-full"> {/* Cambio a flex-row para ordenarlos en fila */}
       {/* Gráfico de torta */}
-      <div className="flex flex-col items-center lg:w-1/4 p-4 rounded shadow-sm">
-        <Title level={2}>Tipos de Contacto</Title>
+      <div className="w-1/3 p-4">
+        <Title level={3}>Tipos de Contacto</Title>
         {chartData && chartData.datasets ? (
-          <Pie data={chartData} />
+          <Pie data={chartData} width={150} height={150} /> 
         ) : (
           <p>No data available</p>
         )}
-        
-        {/* Mostrar el rango de fechas */}
+
         <p>
           Mostrando desde el {rangeDates[0].format("DD/MM/YYYY")} hasta el {rangeDates[1].format("DD/MM/YYYY")}
         </p>
 
-        {/* Selector de rango de fechas */}
         <RangePicker
           value={rangeDates}
           onChange={handleDateRangeChange}
@@ -121,18 +135,28 @@ const ContactPointPieChart = () => {
         />
       </div>
 
-      {/* Porcentajes y colores */}
-      <div className="flex flex-col lg:w-1/3 p-4">
-        <Title level={3}>Distribución de Tipos de Contacto</Title>
+      {/* Distribución de puntos de contacto */}
+      <div className="w-1/3 p-4">
+        <Title level={4}>Distribución de Tipos de Contacto</Title>
         {Object.keys(percentages).map((type, index) => (
-          <div key={type} className="flex items-center gap-2">
+          <div key={type} className="flex items-right gap-2">
             <div
-              className="w-5 h-4 rounded-full"
+              className="w-4 h-4 rounded-full"
               style={{ backgroundColor: chartData?.datasets[0]?.backgroundColor[index] || "#000" }}
             />
             <p>{type}: {percentages[type]}%</p>
           </div>
         ))}
+      </div>
+
+      {/* Gráfico de líneas */}
+      <div className="w-1/3 p-4">
+        <Title level={3}>Puntos de Contacto (Últimos 7 días)</Title>
+        {lineChartData && lineChartData.datasets ? (
+          <Line data={lineChartData} width={250} height={250} />
+        ) : (
+          <p>No data available</p>
+        )}
       </div>
     </div>
   );

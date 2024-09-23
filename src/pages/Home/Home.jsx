@@ -126,7 +126,7 @@ const Home = () => {
       </div>
 
       {/* Gráfico de torta de tipos de contacto */}
-      <div className="mt-6">
+      <div className="mt-5">
         <ContactPointPieChart />
       </div>
     </div>
