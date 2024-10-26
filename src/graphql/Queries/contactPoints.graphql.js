@@ -1,26 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const GET_ALL_CONTACTS = gql`
-  query GetAllContacts {
+  query GetContacts {
     getContacts {
-      contacts {
-        _id
-        contactID
-        contactPointType
-        content
-        userData
-        createdAt
-        status
-      }
-    }
-  }
-`;
-
-export const GET_DEFERRED_CONTACT_POINTS = gql`
-  query GetDeferredContactPoints {
-    getDeferredContactPoints {
-      success
-      message
       contacts {
         _id
         contactID
@@ -32,8 +14,34 @@ export const GET_DEFERRED_CONTACT_POINTS = gql`
         status
         contactPointType
       }
+      statusOps {
+        label
+        value
+      }
+      contactTypeOps {
+        label
+        value
+      }
     }
   }
+`;
+
+export const GET_DEFERRED_CONTACT_POINTS = gql`
+  query GetContacts {
+    getContacts {
+      contacts {
+        _id
+        contactID
+        userEmail
+        adminEmail
+        userData
+        content
+        createdAt
+        status
+        contactPointType
+      }
+}
+}
 `;
 
 export const GET_CONTACT_BY_ID = gql`
