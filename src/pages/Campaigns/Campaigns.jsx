@@ -145,7 +145,7 @@ const Campaigns = () => {
           type="default"
           icon={<ReloadOutlined />}
           onClick={() => refetch()}
-          className="flex items-center justify-center"
+          className="flex items-center justify-center ml-auto"
         >
           Actualizar
         </Button>

@@ -4,20 +4,13 @@ import { Form, Input, Button, message, Modal, Spin } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import BaseModal from "../../components/Modals/BaseModal";
 import AntTable from "../../components/Tables/AntTable";
-import { format, parse, compareAsc, compareDesc } from "date-fns";
+import { format, parse, isValid, compareAsc, compareDesc } from "date-fns";
 import {
   GET_DEFERRED_CONTACT_POINTS,
   SAVE_ADMIN_REPLY,
   GET_CONTACT_BY_ID,
 } from "../../graphql/Queries/contactPoints.graphql";
 import { makeTableColumns } from "./contact.points.base";
-
-const StatusIndicator = ({ color, label }) => (
-  <div className="flex items-center mr-4">
-    <div className={`w-4 h-4 rounded-full ${color} mr-2`} />
-    <span>{label}</span>
-  </div>
-);
 
 const ContactPoints = () => {
   const [form] = Form.useForm();
@@ -28,42 +21,55 @@ const ContactPoints = () => {
   const [sortedContacts, setSortedContacts] = useState([]);
   const [orderDirection, setOrderDirection] = useState("desc");
 
-  const { data, error, loading, refetch } = useQuery(GET_DEFERRED_CONTACT_POINTS, {
-    fetchPolicy: "network-only", // Asegura que siempre obtengas datos del servidor
+  const { data, loading, refetch } = useQuery(GET_DEFERRED_CONTACT_POINTS, {
+    fetchPolicy: "network-only",
     onError: (err) => console.error("Error fetching contacts:", err),
   });
 
-  const [saveAdminReply] = useMutation(SAVE_ADMIN_REPLY);
+  const StatusIndicator = ({ color, label }) => (
+    <div className="flex items-center mr-4">
+      <div className={`w-4 h-4 rounded-full ${color} mr-2`} />
+      <span>{label}</span>
+    </div>
+  );
+  
 
+  const [saveAdminReply] = useMutation(SAVE_ADMIN_REPLY);
   const [getContactById] = useLazyQuery(GET_CONTACT_BY_ID, {
-    onCompleted: (data) => {
-      console.log("Estado cambiado a Visto para contactID:", data.getContactByContactId.contactID);
-      refetch();
-    },
-    onError: (error) => console.error("Error al cambiar estado a Visto:", error),
+    onCompleted: () => refetch(),
+    onError: (error) =>
+      console.error("Error al cambiar estado a Visto:", error),
   });
 
-  useEffect(() => {
-    if (data && data.getContacts && data.getContacts.contacts) {
-      const allContacts = data.getContacts.contacts;
+  const formatDate = (dateString) => {
+    try {
+      const parsedDate = parse(dateString, "dd/MM/yyyy HH:mm:ss", new Date());
+      if (isValid(parsedDate)) {
+        return format(parsedDate, "dd/MM/yyyy HH:mm:ss");
+      }
+      return "Fecha inválida";
+    } catch {
+      return "Fecha inválida";
+    }
+  };
 
-      const contactPoints = allContacts.filter(
+  useEffect(() => {
+    if (data?.getContacts?.contacts) {
+      const contactPoints = data.getContacts.contacts.filter(
         (contact) => contact.status !== "respuesta"
       );
 
-      const formattedContacts = contactPoints.map((contact) => {
-        const parsedDate = parse(contact.createdAt, "dd/MM/yyyy HH:mm:ss", new Date());
-        return {
-          ...contact,
-          createdAt: format(parsedDate, "dd/MM/yyyy HH:mm:ss"),
-        };
-      });
+      const formattedContacts = contactPoints.map((contact) => ({
+        ...contact,
+        createdAt: formatDate(contact.createdAt),
+      }));
 
-      const sortedByDate = [...formattedContacts].sort((a, b) => {
-        const dateA = parse(a.createdAt, "dd/MM/yyyy HH:mm:ss", new Date());
-        const dateB = parse(b.createdAt, "dd/MM/yyyy HH:mm:ss", new Date());
-        return compareDesc(dateA, dateB);
-      });
+      const sortedByDate = formattedContacts.sort((a, b) =>
+        compareDesc(
+          parse(a.createdAt, "dd/MM/yyyy HH:mm:ss", new Date()),
+          parse(b.createdAt, "dd/MM/yyyy HH:mm:ss", new Date())
+        )
+      );
 
       setSortedContacts(sortedByDate);
     }
@@ -72,8 +78,14 @@ const ContactPoints = () => {
   const handleSortByDate = () => {
     const sortedData = [...sortedContacts].sort((a, b) =>
       orderDirection === "asc"
-        ? compareAsc(new Date(a.createdAt), new Date(b.createdAt))
-        : compareDesc(new Date(a.createdAt), new Date(b.createdAt))
+        ? compareAsc(
+            parse(a.createdAt, "dd/MM/yyyy HH:mm:ss", new Date()),
+            parse(b.createdAt, "dd/MM/yyyy HH:mm:ss", new Date())
+          )
+        : compareDesc(
+            parse(a.createdAt, "dd/MM/yyyy HH:mm:ss", new Date()),
+            parse(b.createdAt, "dd/MM/yyyy HH:mm:ss", new Date())
+          )
     );
     setSortedContacts(sortedData);
     setOrderDirection(orderDirection === "asc" ? "desc" : "asc");
@@ -88,17 +100,15 @@ const ContactPoints = () => {
   const onRespond = (record) => {
     setSelectedContact(record);
     setIsModalOpen(true);
-
     form.setFieldsValue({
       contactType: record.contactPointType,
       incomingMessage: record.content,
     });
-
     getContactById({ variables: { contactID: record.contactID } });
   };
 
   const onView = (record) => {
-    const response = data?.getContacts?.contacts?.find(
+    const response = data?.getContacts?.contacts.find(
       (contact) =>
         contact.contactID === record.contactID && contact.status === "respuesta"
     );
@@ -107,10 +117,10 @@ const ContactPoints = () => {
       message: record.content,
       name: record.userData,
       email: record.userEmail,
-      fecha: record.createdAt,
+      fecha: formatDate(record.createdAt),
       estado: record.status,
       responseContent: response ? response.content : null,
-      responseDate: response ? response.createdAt : null,
+      responseDate: response ? formatDate(response.createdAt) : null,
     });
 
     setIsViewModalOpen(true);
@@ -119,29 +129,21 @@ const ContactPoints = () => {
   const onSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const { content } = values;
-
-      if (!selectedContact || !selectedContact.contactID) {
-        console.error("No contact selected or contactID is missing");
-        return;
-      }
-
+      if (!selectedContact) throw new Error("No contact selected");
       await saveAdminReply({
         variables: {
           input: {
             contactID: selectedContact.contactID,
             description: selectedContact.contactPointType,
-            content,
+            content: values.content,
           },
         },
       });
-
       message.success("Respuesta enviada exitosamente");
       setIsModalOpen(false);
       form.resetFields();
-      await refetch();
+      refetch();
     } catch (error) {
-      console.error("Error saving admin reply:", error);
       message.error("Error al enviar la respuesta");
     }
   };
@@ -149,7 +151,9 @@ const ContactPoints = () => {
   if (loading) return <Spin size="large" />;
 
   return (
+    
     <div className="flex flex-col w-full h-full overflow-hidden">
+
       <BaseModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
@@ -159,7 +163,7 @@ const ContactPoints = () => {
         component={
           <Form form={form} layout="vertical">
             <Form.Item name="contactType" label="Tipo de mensaje">
-              <Input type="text" readOnly />
+              <Input readOnly />
             </Form.Item>
             <Form.Item name="incomingMessage" label="Descripción">
               <Input.TextArea readOnly />
@@ -167,7 +171,9 @@ const ContactPoints = () => {
             <Form.Item
               name="content"
               label="Tu respuesta"
-              rules={[{ required: true, message: "La respuesta es obligatoria" }]}
+              rules={[
+                { required: true, message: "La respuesta es obligatoria" },
+              ]}
             >
               <Input.TextArea rows={5} />
             </Form.Item>
@@ -180,38 +186,57 @@ const ContactPoints = () => {
         title="Detalle del Mensaje"
         visible={isViewModalOpen}
         onCancel={() => setIsViewModalOpen(false)}
-        footer={<Button onClick={() => setIsViewModalOpen(false)}>Cerrar</Button>}
+        footer={
+          <Button onClick={() => setIsViewModalOpen(false)}>Cerrar</Button>
+        }
       >
-        <p><strong>Nombre usuario:</strong> {viewContent.name}</p>
-        <p><strong>Email usuario:</strong> {viewContent.email}</p>
-        <p><strong>Recibido el:</strong> {viewContent.fecha}</p>
-        <p><strong>Mensaje del usuario:</strong> {viewContent.message}</p>
-        <p><strong>Estado:</strong> {viewContent.estado}</p>
+        <p>
+          <strong>Nombre usuario:</strong> {viewContent.name}
+        </p>
+        <p>
+          <strong>Email usuario:</strong> {viewContent.email}
+        </p>
+        <p>
+          <strong>Recibido el:</strong> {viewContent.fecha}
+        </p>
+        <p>
+          <strong>Mensaje del usuario:</strong> {viewContent.message}
+        </p>
+        <p>
+          <strong>Estado:</strong> {viewContent.estado}
+        </p>
         {viewContent.responseContent && (
           <>
-            <p><strong>Fecha de Respuesta:</strong> {viewContent.responseDate}</p>
-            <p><strong>Respuesta:</strong> {viewContent.responseContent}</p>
+            <p>
+              <strong>Fecha de Respuesta:</strong> {viewContent.responseDate}
+            </p>
+            <p>
+              <strong>Respuesta:</strong> {viewContent.responseContent}
+            </p>
           </>
         )}
       </Modal>
 
-      <div className="flex justify-between items-center p-4 bg-gray-100">
-        <div className="flex">
-          <StatusIndicator color="bg-red-500" label="Sin responder" />
-          <StatusIndicator color="bg-yellow-500" label="Visto" />
-          <StatusIndicator color="bg-green-500" label="Respondido" />
-        </div>
-        <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+      <div className="flex flex-row justify-between items-center p-4 bg-gray-100">
+      <div className="flex ">
+    <StatusIndicator color="bg-green-500" label="Respondido" />
+    <StatusIndicator color="bg-yellow-500" label="Visto" />
+    <StatusIndicator color="bg-red-500" label="Sin responder" />
+  </div>
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={() => refetch()}
+          className="flex items-center justify-center ml-auto"
+        >
           Actualizar
         </Button>
       </div>
 
-      <main className="flex w-full h-full overflow-y-auto">
-        <AntTable
-          data={sortedContacts}
-          columns={makeTableColumns({ onRespond, onView, handleSortByDate })}
-        />
-      </main>
+      <AntTable
+        data={sortedContacts}
+        columns={makeTableColumns({ onRespond, onView, handleSortByDate })}
+      />
     </div>
   );
 };
