@@ -16,8 +16,6 @@ const Home = () => {
   const { token: { colorLink } } = theme.useToken();
   const valueStyle = { color: colorLink };
 
-  const [activeUsersCount, setActiveUsersCount] = useState(0);
-  const [registeredUsersCount, setRegisteredUsersCount] = useState(0);
   const [activeUsersData, setActiveUsersData] = useState([]);
   const [registeredUsersData, setRegisteredUsersData] = useState([]);
   const [activeUsersLast7Days, setActiveUsersLast7Days] = useState([]);
@@ -27,24 +25,42 @@ const Home = () => {
   const { loading: loadingRegisteredUsers, data: registeredUsersDataResponse } = useQuery(GET_REGISTER_USERS);
 
   useEffect(() => {
-    if (activeUsersDataResponse && activeUsersDataResponse.getActiveUsers) {
-      setActiveUsersCount(activeUsersDataResponse.getActiveUsers.users);
-
-      const dummyData = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100));
-      setActiveUsersData(dummyData);
-      const last7DaysData = Array.from({ length: 7 }, () => Math.floor(Math.random() * 20));
-      setActiveUsersLast7Days(last7DaysData);
+    if (activeUsersDataResponse?.getActiveUsers) {
+      const users = activeUsersDataResponse.getActiveUsers.users;
+      setActiveUsersData(groupUsersByMonth(users));
+      setActiveUsersLast7Days(groupUsersByDay(users));
     }
 
-    if (registeredUsersDataResponse && registeredUsersDataResponse.getRegisterUsers) {
-      setRegisteredUsersCount(registeredUsersDataResponse.getRegisterUsers.users);
-
-      const dummyData = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100));
-      setRegisteredUsersData(dummyData);
-      const last7DaysData = Array.from({ length: 7 }, () => Math.floor(Math.random() * 20));
-      setRegisteredUsersLast7Days(last7DaysData);
+    if (registeredUsersDataResponse?.getRegisterUsers) {
+      const users = registeredUsersDataResponse.getRegisterUsers.users;
+      setRegisteredUsersData(groupUsersByMonth(users));
+      setRegisteredUsersLast7Days(groupUsersByDay(users));
     }
   }, [activeUsersDataResponse, registeredUsersDataResponse]);
+
+  const groupUsersByMonth = (users) => {
+    const months = Array(12).fill(0);
+    users.forEach(user => {
+      const month = dayjs(parseInt(user.createdAt)).month();
+      months[month] += 1;
+    });
+    return months;
+  };
+
+  const groupUsersByDay = (users) => {
+    const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, 'day').format('DD/MM')).reverse();
+    const dailyCounts = Array(7).fill(0);
+
+    users.forEach(user => {
+      const day = dayjs(parseInt(user.createdAt)).format('DD/MM');
+      const index = last7Days.indexOf(day);
+      if (index !== -1) {
+        dailyCounts[index] += 1;
+      }
+    });
+
+    return dailyCounts;
+  };
 
   if (loadingActiveUsers || loadingRegisteredUsers) {
     return <Spinner tip="Loading Statistics" />;
@@ -58,11 +74,11 @@ const Home = () => {
     },
     elements: {
       point: {
-        radius: 5, // Tamaño del marcador
-        hoverRadius: 7, // Tamaño al pasar el mouse
-        borderWidth: 2, // Borde del marcador
-        backgroundColor: "#fff", // Color de fondo del marcador
-        borderColor: "#1EAF8E", // Color del borde
+        radius: 5,
+        hoverRadius: 7,
+        borderWidth: 2,
+        backgroundColor: "#fff",
+        borderColor: "#1EAF8E",
       },
     },
   };
@@ -126,7 +142,7 @@ const Home = () => {
           <Card hoverable bordered={false} className="w-full">
             <Statistic
               title="Usuarios activos hasta hoy"
-              value={activeUsersCount}
+              value={activeUsersData.reduce((a, b) => a + b, 0)}
               valueStyle={valueStyle}
               formatter={formatter}
             />
@@ -135,7 +151,7 @@ const Home = () => {
           <Card hoverable bordered={false} className="w-full">
             <Statistic
               title="Usuarios registrados hasta hoy"
-              value={registeredUsersCount}
+              value={registeredUsersData.reduce((a, b) => a + b, 0)}
               valueStyle={valueStyle}
               formatter={formatter}
             />

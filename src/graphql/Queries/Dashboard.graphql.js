@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_ACTIVE_USERS = gql`
   query GetActiveUsers {
@@ -7,7 +7,22 @@ export const GET_ACTIVE_USERS = gql`
       message
       users {
         _id
+        names
+        lastNames
+        contact
+        rut
+        socialName
         createdAt
+        lastLogin
+        verifyEmail
+        uid
+        commune
+        email
+        password
+        birthDate
+        gender
+        isPatient
+        tokenFirebase
       }
     }
   }
@@ -20,7 +35,22 @@ export const GET_REGISTER_USERS = gql`
       message
       users {
         _id
+        names
+        lastNames
+        contact
+        rut
+        socialName
         createdAt
+        lastLogin
+        verifyEmail
+        uid
+        commune
+        email
+        password
+        birthDate
+        gender
+        isPatient
+        tokenFirebase
       }
     }
   }
