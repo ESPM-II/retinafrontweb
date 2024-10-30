@@ -105,22 +105,23 @@ const Campaigns = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   const campaigns = (data?.getCampaigns || []).map(campaign => {
-    const dateStr = campaign.date;
-
+    const dateStr = campaign.createdAt; // Asegúrate de usar 'createdAt'
+  
     if (dateStr) {
       const [datePart, timePart] = dateStr.split(' ');
       const [day, month, year] = datePart.split('/');
       const dateObj = new Date(`${year}-${month}-${day}T${timePart}`);
-
+  
       return { ...campaign, dateObj };
     }
-
+  
     return { ...campaign, dateObj: null };
   }).sort((a, b) => {
-    if (!a.dateObj) return 1;
+    if (!a.dateObj) return 1; // Los nulos se van al final
     if (!b.dateObj) return -1;
-    return b.dateObj - a.dateObj;
+    return b.dateObj - a.dateObj; // Ordenar de más reciente a más antigua
   });
+  
 
   const onCancel = () => {
     setIsModalOpen(false);
