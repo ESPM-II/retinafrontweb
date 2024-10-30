@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
         setIsAuthenticated(true);
         console.log('Redirigiendo a /campaigns...');
-        navigate('/campaigns');
+        navigate('/');
       } else {
         console.error('Error: Usuario no encontrado en la respuesta.');
         throw new Error('Usuario no encontrado.');
