@@ -4,7 +4,7 @@ import { Form, Input, Button, message, Modal, Spin } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import BaseModal from "../../components/Modals/BaseModal";
 import AntTable from "../../components/Tables/AntTable";
-import { format, parse, isValid, compareAsc, compareDesc } from "date-fns";
+import { format, parse, parseISO, compareAsc, compareDesc } from "date-fns";
 import {
   GET_DEFERRED_CONTACT_POINTS,
   SAVE_ADMIN_REPLY,
@@ -32,7 +32,6 @@ const ContactPoints = () => {
       <span>{label}</span>
     </div>
   );
-  
 
   const [saveAdminReply] = useMutation(SAVE_ADMIN_REPLY);
   const [getContactById] = useLazyQuery(GET_CONTACT_BY_ID, {
@@ -41,14 +40,15 @@ const ContactPoints = () => {
       console.error("Error al cambiar estado a Visto:", error),
   });
 
+  // Función para formatear fechas
   const formatDate = (dateString) => {
     try {
+      // Parsear desde el formato "dd/MM/yyyy HH:mm:ss"
       const parsedDate = parse(dateString, "dd/MM/yyyy HH:mm:ss", new Date());
-      if (isValid(parsedDate)) {
-        return format(parsedDate, "dd/MM/yyyy HH:mm:ss");
-      }
-      return "Fecha inválida";
-    } catch {
+      // Volver a formatear al mismo formato (si es necesario)
+      return format(parsedDate, "dd/MM/yyyy HH:mm:ss");
+    } catch (error) {
+      console.error("Error al formatear la fecha:", error);
       return "Fecha inválida";
     }
   };
@@ -61,7 +61,7 @@ const ContactPoints = () => {
 
       const formattedContacts = contactPoints.map((contact) => ({
         ...contact,
-        createdAt: formatDate(contact.createdAt),
+        createdAt: formatDate(contact.createdAt), // Formatear la fecha
       }));
 
       const sortedByDate = formattedContacts.sort((a, b) =>
@@ -117,10 +117,10 @@ const ContactPoints = () => {
       message: record.content,
       name: record.userData,
       email: record.userEmail,
-      fecha: formatDate(record.createdAt),
+      fecha: formatDate(record.createdAt), // Formatear la fecha
       estado: record.status,
       responseContent: response ? response.content : null,
-      responseDate: response ? formatDate(response.createdAt) : null,
+      responseDate: response ? formatDate(response.createdAt) : null, // Formatear la fecha
     });
 
     setIsViewModalOpen(true);
@@ -151,9 +151,7 @@ const ContactPoints = () => {
   if (loading) return <Spin size="large" />;
 
   return (
-    
     <div className="flex flex-col w-full h-full overflow-hidden">
-
       <BaseModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
@@ -180,6 +178,7 @@ const ContactPoints = () => {
           </Form>
         }
         onCancel={onCancel}
+        hasAddButton={false}
       />
 
       <Modal
@@ -218,11 +217,11 @@ const ContactPoints = () => {
       </Modal>
 
       <div className="flex flex-row justify-between items-center p-4 bg-gray-100">
-      <div className="flex ">
-    <StatusIndicator color="bg-green-500" label="Respondido" />
-    <StatusIndicator color="bg-yellow-500" label="Visto" />
-    <StatusIndicator color="bg-red-500" label="Sin responder" />
-  </div>
+        <div className="flex">
+          <StatusIndicator color="bg-green-500" label="Respondido" />
+          <StatusIndicator color="bg-yellow-500" label="Visto" />
+          <StatusIndicator color="bg-red-500" label="Sin responder" />
+        </div>
         <Button
           type="default"
           icon={<ReloadOutlined />}
