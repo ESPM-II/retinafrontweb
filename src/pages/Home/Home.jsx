@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Card, DatePicker, Statistic, Typography, theme } from "antd";
+import { Card, Statistic, Typography, theme } from "antd";
 import CountUp from "react-countup";
 import dayjs from "dayjs";
 import { LineChart } from "../../components/Charts/LineChart";
 import Spinner from "../../components/Loading/Spinner";
 import { useQuery } from "@apollo/client";
 import { GET_ACTIVE_USERS, GET_REGISTER_USERS } from "../../graphql/Queries/Dashboard.graphql";
+import { GET_SCHEDULE_LOGS } from "../../graphql/Queries/schedules.graphql";
 import ContactPointPieChart from "../../components/Charts/ContactPointPieChart";
 
-const { RangePicker } = DatePicker;
 const { Title } = Typography;
 const formatter = (value) => <CountUp end={value} separator="," />;
 
@@ -20,9 +20,12 @@ const Home = () => {
   const [registeredUsersData, setRegisteredUsersData] = useState([]);
   const [activeUsersLast7Days, setActiveUsersLast7Days] = useState([]);
   const [registeredUsersLast7Days, setRegisteredUsersLast7Days] = useState([]);
+  const [scheduleLogsData, setScheduleLogsData] = useState([]);
+  const [scheduleLogsLast7Days, setScheduleLogsLast7Days] = useState([]);
 
   const { loading: loadingActiveUsers, data: activeUsersDataResponse } = useQuery(GET_ACTIVE_USERS);
   const { loading: loadingRegisteredUsers, data: registeredUsersDataResponse } = useQuery(GET_REGISTER_USERS);
+  const { loading: loadingScheduleLogs, data: scheduleLogsResponse } = useQuery(GET_SCHEDULE_LOGS);
 
   useEffect(() => {
     if (activeUsersDataResponse?.getActiveUsers) {
@@ -36,7 +39,13 @@ const Home = () => {
       setRegisteredUsersData(groupUsersByMonth(users));
       setRegisteredUsersLast7Days(groupUsersByDay(users));
     }
-  }, [activeUsersDataResponse, registeredUsersDataResponse]);
+
+if (scheduleLogsResponse?.getScheduleLogs) {
+      const logs = scheduleLogsResponse.getScheduleLogs;
+      setScheduleLogsData(groupSchedulesByMonth(logs));
+      setScheduleLogsLast7Days(groupSchedulesByDay(logs));
+    }
+  }, [activeUsersDataResponse, registeredUsersDataResponse, scheduleLogsResponse]);
 
   const groupUsersByMonth = (users) => {
     const months = Array(12).fill(0);
@@ -62,9 +71,42 @@ const Home = () => {
     return dailyCounts;
   };
 
-  if (loadingActiveUsers || loadingRegisteredUsers) {
+  const groupSchedulesByMonth = (logs) => {
+    const months = Array(12).fill(0);
+    const currentDate = dayjs();
+
+    logs.forEach(log => {
+      const logDate = dayjs(parseInt(log.date));
+      const diffInMonths = currentDate.diff(logDate, "month");
+
+      if (diffInMonths < 12) {
+        const monthIndex = 11 - diffInMonths;
+        months[monthIndex] += 1;
+      }
+    });
+
+    return months;
+  };
+
+  const groupSchedulesByDay = (logs) => {
+    const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse();
+    const dailyCounts = Array(7).fill(0);
+
+    logs.forEach(log => {
+      const day = dayjs(parseInt(log.date)).format("DD/MM");
+      const index = last7Days.indexOf(day);
+      if (index !== -1) {
+        dailyCounts[index] += 1;
+      }
+    });
+
+    return dailyCounts;
+  };
+
+  if (loadingActiveUsers || loadingRegisteredUsers || loadingScheduleLogs) {
     return <Spinner tip="Loading Statistics" />;
   }
+
 
   const chartOptions = {
     responsive: true,
@@ -78,7 +120,6 @@ const Home = () => {
         hoverRadius: 7,
         borderWidth: 2,
         backgroundColor: "#fff",
-        borderColor: "#1EAF8E",
       },
     },
   };
@@ -91,7 +132,7 @@ const Home = () => {
         data: activeUsersData,
         borderColor: "#1EAF8E",
         backgroundColor: "rgba(30, 175, 142, 0.5)",
-        tension: 0.4,
+        tension: 0,
         fill: true,
       },
       {
@@ -99,7 +140,7 @@ const Home = () => {
         data: registeredUsersData,
         borderColor: "#EDA145",
         backgroundColor: "rgba(237, 161, 69, 0.5)",
-        tension: 0.4,
+        tension: 0,
         fill: true,
       },
     ],
@@ -113,7 +154,7 @@ const Home = () => {
         data: activeUsersLast7Days,
         borderColor: "#1EAF8E",
         backgroundColor: "rgba(30, 175, 142, 0.5)",
-        tension: 0.4,
+        tension: 0,
         fill: true,
       },
       {
@@ -121,7 +162,35 @@ const Home = () => {
         data: registeredUsersLast7Days,
         borderColor: "#EDA145",
         backgroundColor: "rgba(237, 161, 69, 0.5)",
-        tension: 0.4,
+        tension: 0,
+        fill: true,
+      },
+    ],
+  };
+
+  const chartDataScheduleLogs = {
+    labels: [...Array(12)].map((_, i) => dayjs().subtract(11 - i, "month").format("MMM YYYY")),
+    datasets: [
+      {
+        label: "Agendamientos",
+        data: scheduleLogsData,
+        borderColor: "#1E90FF",
+        backgroundColor: "rgba(30, 144, 255, 0.2)",
+        tension: 0,
+        fill: true,
+      },
+    ],
+  };
+
+  const chartDataScheduleLogsLast7Days = {
+    labels: [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse(),
+    datasets: [
+      {
+        label: "Agendamientos (Últimos 7 días)",
+        data: scheduleLogsLast7Days,
+        borderColor: "#FFA500",
+        backgroundColor: "rgba(255, 165, 0, 0.2)",
+        tension: 0,
         fill: true,
       },
     ],
@@ -166,6 +235,24 @@ const Home = () => {
       <div className="mt-5">
         <ContactPointPieChart />
       </div>
+
+      <div className="flex flex-row flex-wrap lg:flex-nowrap gap-4">
+  <div className="w-full lg:w-1/2">
+    <LineChart
+      data={chartDataScheduleLogs}
+      options={chartOptions}
+      title="Agendamientos (Últimos 12 meses)"
+    />
+  </div>
+  <div className="w-full lg:w-1/2">
+    <LineChart
+      data={chartDataScheduleLogsLast7Days}
+      options={chartOptions}
+      title="Agendamientos (Últimos 7 días)"
+    />
+  </div>
+</div>
+
     </div>
   );
 };

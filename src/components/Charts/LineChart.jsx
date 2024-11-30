@@ -22,6 +22,11 @@ export const LineChart = ({ data, title }) => {
         text: title,
       },
     },
+    elements: {
+      line: {
+        tension: 1, // Desactiva la suavización para crear líneas con picos.
+      },
+    },
   };
 
   ChartJS.register(

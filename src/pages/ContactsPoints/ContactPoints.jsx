@@ -40,12 +40,9 @@ const ContactPoints = () => {
       console.error("Error al cambiar estado a Visto:", error),
   });
 
-  // Función para formatear fechas
   const formatDate = (dateString) => {
     try {
-      // Parsear desde el formato "dd/MM/yyyy HH:mm:ss"
       const parsedDate = parse(dateString, "dd/MM/yyyy HH:mm:ss", new Date());
-      // Volver a formatear al mismo formato (si es necesario)
       return format(parsedDate, "dd/MM/yyyy HH:mm:ss");
     } catch (error) {
       console.error("Error al formatear la fecha:", error);
@@ -61,7 +58,7 @@ const ContactPoints = () => {
 
       const formattedContacts = contactPoints.map((contact) => ({
         ...contact,
-        createdAt: formatDate(contact.createdAt), // Formatear la fecha
+        createdAt: formatDate(contact.createdAt),
       }));
 
       const sortedByDate = formattedContacts.sort((a, b) =>
@@ -95,6 +92,7 @@ const ContactPoints = () => {
     setIsModalOpen(false);
     setSelectedContact(null);
     form.resetFields();
+    refetch(); // Refetch data when modal is closed
   };
 
   const onRespond = (record) => {
@@ -117,10 +115,10 @@ const ContactPoints = () => {
       message: record.content,
       name: record.userData,
       email: record.userEmail,
-      fecha: formatDate(record.createdAt), // Formatear la fecha
+      fecha: formatDate(record.createdAt),
       estado: record.status,
       responseContent: response ? response.content : null,
-      responseDate: response ? formatDate(response.createdAt) : null, // Formatear la fecha
+      responseDate: response ? formatDate(response.createdAt) : null,
     });
 
     setIsViewModalOpen(true);
@@ -169,9 +167,7 @@ const ContactPoints = () => {
             <Form.Item
               name="content"
               label="Tu respuesta"
-              rules={[
-                { required: true, message: "La respuesta es obligatoria" },
-              ]}
+              rules={[{ required: true, message: "La respuesta es obligatoria" }]}
             >
               <Input.TextArea rows={5} />
             </Form.Item>
@@ -184,9 +180,19 @@ const ContactPoints = () => {
       <Modal
         title="Detalle del Mensaje"
         visible={isViewModalOpen}
-        onCancel={() => setIsViewModalOpen(false)}
+        onCancel={() => {
+          setIsViewModalOpen(false);
+          refetch(); // Refetch data when view modal is closed
+        }}
         footer={
-          <Button onClick={() => setIsViewModalOpen(false)}>Cerrar</Button>
+          <Button
+            onClick={() => {
+              setIsViewModalOpen(false);
+              refetch();
+            }}
+          >
+            Cerrar
+          </Button>
         }
       >
         <p>
