@@ -72,22 +72,28 @@ if (scheduleLogsResponse?.getScheduleLogs) {
   };
 
   const groupSchedulesByMonth = (logs) => {
-    const months = Array(12).fill(0);
+    const monthCounts = {}; // Objeto para almacenar el conteo por mes
     const currentDate = dayjs();
-
+  
     logs.forEach(log => {
       const logDate = dayjs(parseInt(log.date));
       const diffInMonths = currentDate.diff(logDate, "month");
-
-      if (diffInMonths < 12) {
-        const monthIndex = 11 - diffInMonths;
-        months[monthIndex] += 1;
+  
+      if (diffInMonths >= 0 && diffInMonths < 12) {
+        const monthKey = logDate.format("MMM YYYY"); // Generar clave única para cada mes
+        monthCounts[monthKey] = (monthCounts[monthKey] || 0) + 1;
       }
     });
-
-    return months;
+  
+    // Crear un arreglo con los últimos 12 meses
+    const last12Months = [...Array(12)].map((_, i) => {
+      const monthKey = currentDate.subtract(11 - i, "month").format("MMM YYYY");
+      return monthCounts[monthKey] || 0; // Agregar 0 si no hay datos para ese mes
+    });
+  
+    return last12Months;
   };
-
+  
   const groupSchedulesByDay = (logs) => {
     const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse();
     const dailyCounts = Array(7).fill(0);
@@ -181,6 +187,7 @@ if (scheduleLogsResponse?.getScheduleLogs) {
       },
     ],
   };
+  
 
   const chartDataScheduleLogsLast7Days = {
     labels: [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse(),
