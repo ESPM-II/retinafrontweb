@@ -40,6 +40,12 @@ export const makeTableColumns = ({
     {
       dataIndex: "createdAt",
       title: "Fecha de creación",
+      render: (createdAt) => {
+        const formattedDate = dayjs(createdAt, "DD/MM/YYYY").isValid()
+          ? dayjs(createdAt, "DD/MM/YYYY").format("DD-MM-YYYY")
+          : "Fecha no válida";
+        return formattedDate;
+      },
     },
     {
       key: "actions",

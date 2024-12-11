@@ -15,7 +15,7 @@ const formatter = (value) => <CountUp end={value} separator="," />;
 const Home = () => {
   const { token: { colorLink } } = theme.useToken();
   const valueStyle = { color: colorLink };
-
+  const [latestLogin, setLatestLogin] = useState("");
   const [activeUsersData, setActiveUsersData] = useState([]);
   const [registeredUsersData, setRegisteredUsersData] = useState([]);
   const [activeUsersLast7Days, setActiveUsersLast7Days] = useState([]);
@@ -30,14 +30,24 @@ const Home = () => {
   useEffect(() => {
     if (activeUsersDataResponse?.getActiveUsers) {
       const users = activeUsersDataResponse.getActiveUsers.users;
+    
+      // Procesar datos de usuarios activos
       setActiveUsersData(groupUsersByMonth(users));
       setActiveUsersLast7Days(groupUsersByDay(users));
+    
+      // Contar usuarios que han iniciado sesión hasta hoy
+      const today = dayjs().startOf("day");
+      const activeUsersToday = users.filter(user => dayjs(parseInt(user.lastLogin)).isSame(today, "day")).length;
+      setActiveUsersData((prevData) => [...prevData.slice(0, -1), activeUsersToday]); // Actualizar último valor para hoy
     }
+    
 
     if (registeredUsersDataResponse?.getRegisterUsers) {
       const users = registeredUsersDataResponse.getRegisterUsers.users;
-      setRegisteredUsersData(groupUsersByMonth(users));
-      setRegisteredUsersLast7Days(groupUsersByDay(users));
+  
+      // Procesar usuarios registrados por mes y por día
+      setRegisteredUsersData(groupUsersByMonth(users, "createdAt"));
+      setRegisteredUsersLast7Days(groupUsersByDay(users, "createdAt"));
     }
 
 if (scheduleLogsResponse?.getScheduleLogs) {
@@ -57,19 +67,20 @@ if (scheduleLogsResponse?.getScheduleLogs) {
   };
 
   const groupUsersByDay = (users) => {
-    const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, 'day').format('DD/MM')).reverse();
+    const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse();
     const dailyCounts = Array(7).fill(0);
-
-    users.forEach(user => {
-      const day = dayjs(parseInt(user.createdAt)).format('DD/MM');
+  
+    users.forEach((user) => {
+      const day = dayjs(parseInt(user.lastLogin)).format("DD/MM"); // Usar `lastLogin` para calcular el día
       const index = last7Days.indexOf(day);
       if (index !== -1) {
-        dailyCounts[index] += 1;
+        dailyCounts[index] += 1; // Incrementar el conteo para el día correspondiente
       }
     });
-
+  
     return dailyCounts;
   };
+  
 
   const groupSchedulesByMonth = (logs) => {
     const monthCounts = {}; // Objeto para almacenar el conteo por mes
