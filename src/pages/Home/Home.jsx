@@ -8,6 +8,9 @@ import { useQuery } from "@apollo/client";
 import { GET_ACTIVE_USERS, GET_REGISTER_USERS } from "../../graphql/Queries/Dashboard.graphql";
 import { GET_SCHEDULE_LOGS } from "../../graphql/Queries/schedules.graphql";
 import ContactPointPieChart from "../../components/Charts/ContactPointPieChart";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
+
 
 const { Title } = Typography;
 const formatter = (value) => <CountUp end={value} separator="," />;
@@ -50,12 +53,21 @@ const Home = () => {
       setRegisteredUsersLast7Days(groupUsersByDay(users, "createdAt"));
     }
 
-if (scheduleLogsResponse?.getScheduleLogs) {
-      const logs = scheduleLogsResponse.getScheduleLogs;
-      setScheduleLogsData(groupSchedulesByMonth(logs));
-      setScheduleLogsLast7Days(groupSchedulesByDay(logs));
+    if (scheduleLogsResponse?.getScheduleLogs) {
+      const { schedules } = scheduleLogsResponse.getScheduleLogs;
+  
+      // Verificar si schedules es un array
+      if (Array.isArray(schedules)) {
+        console.log("Datos de agendamientos (schedules):", schedules);
+        setScheduleLogsData(groupSchedulesByMonth(schedules));
+        setScheduleLogsLast7Days(groupSchedulesByDay(schedules));
+      } else {
+        console.error("El valor de schedules no es un array:", schedules);
+      }
+    } else {
+      console.warn("No se encontraron datos en getScheduleLogs.");
     }
-  }, [activeUsersDataResponse, registeredUsersDataResponse, scheduleLogsResponse]);
+  }, [scheduleLogsResponse]);
 
   const groupUsersByMonth = (users) => {
     const months = Array(12).fill(0);
@@ -87,7 +99,8 @@ if (scheduleLogsResponse?.getScheduleLogs) {
     const currentDate = dayjs();
   
     logs.forEach(log => {
-      const logDate = dayjs(parseInt(log.date));
+      const logDate = dayjs(log.date, "DD/MM/YYYY HH:mm:ss", true);
+      // Formato correcto
       const diffInMonths = currentDate.diff(logDate, "month");
   
       if (diffInMonths >= 0 && diffInMonths < 12) {
@@ -108,18 +121,19 @@ if (scheduleLogsResponse?.getScheduleLogs) {
   const groupSchedulesByDay = (logs) => {
     const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse();
     const dailyCounts = Array(7).fill(0);
-
+  
     logs.forEach(log => {
-      const day = dayjs(parseInt(log.date)).format("DD/MM");
+      const day = dayjs(log.date, "DD/MM/YYYY HH:mm:ss", true).format("DD/MM");
+
       const index = last7Days.indexOf(day);
       if (index !== -1) {
         dailyCounts[index] += 1;
       }
     });
-
+  
     return dailyCounts;
   };
-
+  
   if (loadingActiveUsers || loadingRegisteredUsers || loadingScheduleLogs) {
     return <Spinner tip="Loading Statistics" />;
   }
