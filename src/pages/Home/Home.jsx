@@ -26,7 +26,7 @@ const Home = () => {
   const [scheduleLogsData, setScheduleLogsData] = useState([]);
   const [scheduleLogsLast7Days, setScheduleLogsLast7Days] = useState([]);
   const [verifiedUsersData, setVerifiedUsersData] = useState([]);
-const [verifiedUsersLast7Days, setVerifiedUsersLast7Days] = useState([]);
+  const [verifiedUsersLast7Days, setVerifiedUsersLast7Days] = useState([]);
 
 
   const {
@@ -83,6 +83,7 @@ const [verifiedUsersLast7Days, setVerifiedUsersLast7Days] = useState([]);
     }
   }, [verifiedUsersDataResponse]);
   
+  const verifiedUsersCount = verifiedUsersDataResponse?.getVerifiedUsers?.users.length || 0;
 
   useEffect(() => {
     if (activeUsersDataResponse?.getActiveUsers) {
@@ -329,6 +330,15 @@ const [verifiedUsersLast7Days, setVerifiedUsersLast7Days] = useState([]);
               formatter={formatter}
             />
           </Card>
+
+          <Card hoverable bordered={false} className="w-full">
+          <Statistic
+            title="Usuarios verificados hasta hoy"
+            value={verifiedUsersCount}
+            valueStyle={valueStyle}
+            formatter={formatter}
+          />
+        </Card>
 
           <div className="flex items-center w-full h-48 p-2 rounded shadow-sm">
             <LineChart data={chartDataLast7Days} options={chartOptions} title="Últimos 7 días" />
