@@ -26,9 +26,41 @@ const Home = () => {
   const [scheduleLogsData, setScheduleLogsData] = useState([]);
   const [scheduleLogsLast7Days, setScheduleLogsLast7Days] = useState([]);
 
-  const { loading: loadingActiveUsers, data: activeUsersDataResponse } = useQuery(GET_ACTIVE_USERS);
-  const { loading: loadingRegisteredUsers, data: registeredUsersDataResponse } = useQuery(GET_REGISTER_USERS);
-  const { loading: loadingScheduleLogs, data: scheduleLogsResponse } = useQuery(GET_SCHEDULE_LOGS);
+  const {
+    loading: loadingActiveUsers,
+    data: activeUsersDataResponse,
+    refetch: refetchActiveUsers,
+  } = useQuery(GET_ACTIVE_USERS);
+  const {
+    loading: loadingRegisteredUsers,
+    data: registeredUsersDataResponse,
+    refetch: refetchRegisteredUsers,
+  } = useQuery(GET_REGISTER_USERS);
+  const {
+    loading: loadingScheduleLogs,
+    data: scheduleLogsResponse,
+    refetch: refetchScheduleLogs,
+  } = useQuery(GET_SCHEDULE_LOGS);
+
+  useEffect(() => {
+    if (!activeUsersDataResponse) {
+      refetchActiveUsers();
+    }
+    if (!registeredUsersDataResponse) {
+      refetchRegisteredUsers();
+    }
+    if (!scheduleLogsResponse) {
+      refetchScheduleLogs();
+    }
+  }, [
+    activeUsersDataResponse,
+    registeredUsersDataResponse,
+    scheduleLogsResponse,
+    refetchActiveUsers,
+    refetchRegisteredUsers,
+    refetchScheduleLogs,
+  ]);
+
 
   useEffect(() => {
     if (activeUsersDataResponse?.getActiveUsers) {
@@ -78,20 +110,21 @@ const Home = () => {
     return months;
   };
 
-  const groupUsersByDay = (users) => {
+  const groupUsersByDay = (users, dateKey = "lastLogin") => {
     const last7Days = [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse();
     const dailyCounts = Array(7).fill(0);
   
     users.forEach((user) => {
-      const day = dayjs(parseInt(user.lastLogin)).format("DD/MM"); // Usar `lastLogin` para calcular el día
-      const index = last7Days.indexOf(day);
+      const date = user[dateKey] ? dayjs(parseInt(user[dateKey])).format("DD/MM") : null;
+      const index = last7Days.indexOf(date);
       if (index !== -1) {
-        dailyCounts[index] += 1; // Incrementar el conteo para el día correspondiente
+        dailyCounts[index] += 1;
       }
     });
   
     return dailyCounts;
   };
+  
   
 
   const groupSchedulesByMonth = (logs) => {
