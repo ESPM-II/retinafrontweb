@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { LineChart } from "../../components/Charts/LineChart";
 import Spinner from "../../components/Loading/Spinner";
 import { useQuery } from "@apollo/client";
-import { GET_ACTIVE_USERS, GET_REGISTER_USERS } from "../../graphql/Queries/Dashboard.graphql";
+import { GET_ACTIVE_USERS, GET_REGISTER_USERS, GET_VERIFIED_USERS } from "../../graphql/Queries/Dashboard.graphql";
 import { GET_SCHEDULE_LOGS } from "../../graphql/Queries/schedules.graphql";
 import ContactPointPieChart from "../../components/Charts/ContactPointPieChart";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -25,6 +25,9 @@ const Home = () => {
   const [registeredUsersLast7Days, setRegisteredUsersLast7Days] = useState([]);
   const [scheduleLogsData, setScheduleLogsData] = useState([]);
   const [scheduleLogsLast7Days, setScheduleLogsLast7Days] = useState([]);
+  const [verifiedUsersData, setVerifiedUsersData] = useState([]);
+const [verifiedUsersLast7Days, setVerifiedUsersLast7Days] = useState([]);
+
 
   const {
     loading: loadingActiveUsers,
@@ -41,6 +44,14 @@ const Home = () => {
     data: scheduleLogsResponse,
     refetch: refetchScheduleLogs,
   } = useQuery(GET_SCHEDULE_LOGS);
+  const {
+    loading: loadingVerifiedUsers,
+    data: verifiedUsersDataResponse,
+    refetch: refetchVerifiedUsers,
+  } = useQuery(GET_VERIFIED_USERS);
+  
+
+
 
   useEffect(() => {
     if (!activeUsersDataResponse) {
@@ -61,6 +72,17 @@ const Home = () => {
     refetchScheduleLogs,
   ]);
 
+
+  useEffect(() => {
+    if (verifiedUsersDataResponse?.getVerifiedUsers) {
+      const users = verifiedUsersDataResponse.getVerifiedUsers.users;
+  
+      // Agrupar por mes y día
+      setVerifiedUsersData(groupUsersByMonth(users, "createdAt"));
+      setVerifiedUsersLast7Days(groupUsersByDay(users, "createdAt"));
+    }
+  }, [verifiedUsersDataResponse]);
+  
 
   useEffect(() => {
     if (activeUsersDataResponse?.getActiveUsers) {
@@ -207,11 +229,19 @@ const Home = () => {
         tension: 0,
         fill: true,
       },
+      {
+        label: "Usuarios Verificados",
+        data: verifiedUsersData,
+        borderColor: "#6A5ACD",
+        backgroundColor: "rgba(106, 90, 205, 0.5)",
+        tension: 0,
+        fill: true,
+      },
     ],
   };
-
+  
   const chartDataLast7Days = {
-    labels: [...Array(7)].map((_, i) => dayjs().subtract(i, 'day').format('DD/MM')).reverse(),
+    labels: [...Array(7)].map((_, i) => dayjs().subtract(i, "day").format("DD/MM")).reverse(),
     datasets: [
       {
         label: "Usuarios Activos (últimos 7 días)",
@@ -229,8 +259,17 @@ const Home = () => {
         tension: 0,
         fill: true,
       },
+      {
+        label: "Usuarios Verificados (últimos 7 días)",
+        data: verifiedUsersLast7Days,
+        borderColor: "#6A5ACD",
+        backgroundColor: "rgba(106, 90, 205, 0.5)",
+        tension: 0,
+        fill: true,
+      },
     ],
   };
+  
 
   const chartDataScheduleLogs = {
     labels: [...Array(12)].map((_, i) => dayjs().subtract(11 - i, "month").format("MMM YYYY")),
