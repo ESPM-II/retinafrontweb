@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Card, Statistic, Typography, theme } from "antd";
 import CountUp from "react-countup";
 import dayjs from "dayjs";
+import 'dayjs/locale/es'; // Importa el locale en español
+
 import { LineChart } from "../../components/Charts/LineChart";
 import Spinner from "../../components/Loading/Spinner";
 import { useQuery } from "@apollo/client";
@@ -10,6 +12,8 @@ import { GET_SCHEDULE_LOGS } from "../../graphql/Queries/schedules.graphql";
 import ContactPointPieChart from "../../components/Charts/ContactPointPieChart";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 dayjs.extend(customParseFormat);
+
+dayjs.locale('es');
 
 
 const { Title } = Typography;
@@ -212,7 +216,9 @@ const Home = () => {
   };
 
   const chartData = {
-    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+    labels: [...Array(12)].map((_, i) =>
+      dayjs().subtract(11 - i, "month").format("MMM YYYY") // Formato: "Mes Año"
+    ),
     datasets: [
       {
         label: "Usuarios Activos",

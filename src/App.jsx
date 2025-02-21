@@ -15,7 +15,7 @@ const ProtectedRoute = ({ element }) => {
 
   if (loading) {
     // Puedes mostrar un spinner o mensaje de carga
-    return <div>Loading...</div>;
+    return <div>Cargando...</div>;
   }
 
   return isAuthenticated ? element : <Navigate to="/login" />;
